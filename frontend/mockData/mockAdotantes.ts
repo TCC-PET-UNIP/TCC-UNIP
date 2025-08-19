@@ -1,0 +1,40 @@
+import { Adotante } from "../types/types";
+
+export const mockAdotantes: Adotante[] = [
+  {
+    id: 1,
+    name: "Maria Silva",
+    email: "maria@exemplo.com",
+    password: "senha123",
+    city: "São Paulo",
+    state: "SP",
+    role: "USER",
+    cpf: "123.456.789-00",
+    age: 28,
+    avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
+  },
+  {
+    id: 2,
+    name: "João Souza",
+    email: "joao@exemplo.com",
+    password: "senha456",
+    city: "Rio de Janeiro",
+    state: "RJ",
+    role: "USER",
+    cpf: "987.654.321-00",
+    age: 34,
+    avatar: "https://randomuser.me/api/portraits/lego/2.jpg",
+  },
+  {
+    id: 3,
+    name: "Ana Paula",
+    email: "ana@exemplo.com",
+    password: "ana789",
+    city: "Fortaleza",
+    state: "CE",
+    role: "USER",
+    cpf: "321.654.987-00",
+    age: 22,
+    avatar: "https://randomuser.me/api/portraits/lego/5.jpg",
+  },
+];

@@ -1,16 +1,6 @@
-import { Text, View } from "react-native";
+import "../styles/global.css";
+import Login from "../Screens/Login";
 
-export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-      <Text>Teste</Text>
-    </View>
-  );
+export default function App() {
+  return <Login />;
 }
