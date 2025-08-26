@@ -61,4 +61,16 @@ export const mockUsers: User[] = [
     age: 22,
     avatar: "https://randomuser.me/api/portraits/lego/5.jpg",
   },
+   {
+    id: 6,
+    name: "teste",
+    email: "teste@exemplo.com",
+    password: "teste123",
+    city: "Fortaleza",
+    state: "CE",
+    role: "USER",
+    cpf: "321.654.987-00",
+    age: 22,
+    avatar: "https://randomuser.me/api/portraits/lego/5.jpg",
+  },
 ];
