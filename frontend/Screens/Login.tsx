@@ -28,8 +28,8 @@ export default function Login() {
       try {
         const json = await AsyncStorage.getItem("user");
         if (json) router.replace("/home");
-      } catch {
-        /* ignore */
+      } catch (err) {
+        console.error("Erro ao lembrar usuário: ", err)
       }
     };
     checkSession();
@@ -67,8 +67,6 @@ export default function Login() {
 
       if (!user) throw new Error("Email ou senha incorretos");
 
-      // armazena usuário sem senha
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _pw, ...safeUser } = user;
       await AsyncStorage.setItem("user", JSON.stringify(safeUser));
 
