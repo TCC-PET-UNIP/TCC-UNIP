@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +11,7 @@ import {
   StyleSheet,
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SWIPE_THRESHOLD = 120;
@@ -21,14 +23,14 @@ const mockProfiles = [
     name: "Luna",
     age: 2,
     breed: "Beagle",
-    image: require("@/assets/images/Dog_Login.png"),
+    image: require("@/assets/images/Dog_Thor1.jpg"),
   },
   {
     id: "2",
     name: "Simba",
     age: 3,
-    breed: "SRD",
-    image: require("@/assets/images/Dog_Login.png"),
+    breed: "Gato",
+    image: require("@/assets/images/Cat.jpg"),
   },
   {
     id: "3",
@@ -40,9 +42,21 @@ const mockProfiles = [
 ];
 
 export default function Home() {
+  const router = useRouter();
+  const goToLogin = async () => {
+    try {
+      await AsyncStorage.clear();
+    } catch (err) {
+      console.warn("Erro limpando AsyncStorage:", err);
+    } finally {
+      router.push("/login");
+    }
+  };
+
   const [index, setIndex] = useState(0);
   const position = useRef(new Animated.ValueXY()).current;
 
+  // interpolations
   const rotate = position.x.interpolate({
     inputRange: [-SCREEN_WIDTH * 1.5, 0, SCREEN_WIDTH * 1.5],
     outputRange: ["-25deg", "0deg", "25deg"],
@@ -61,17 +75,8 @@ export default function Home() {
     extrapolate: "clamp",
   });
 
-  const panResponder = useRef(
-    Animated.createAnimatedComponent(
-      // ...dummy to satisfy typing in some environments...
-      {} as any
-    )
-  ).current; // will be replaced below
-
-  // create actual PanResponder separately to avoid TS fuss
-  const pan = useRef(new Animated.ValueXY()).current;
-
-  const responder = useRef(
+  // PanResponder criado diretamente e mantido em ref
+  const panResponderRef = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gesture) => {
@@ -87,22 +92,19 @@ export default function Home() {
         }
       },
     })
-  ).current;
-
-  // override panResponder var with real responder (keeps code organized)
-  (panResponder as any).panHandlers = responder.panHandlers;
+  );
 
   const forceSwipe = (direction: "left" | "right") => {
-    const x = direction === "right" ? SCREEN_WIDTH + 100 : -SCREEN_WIDTH - 100;
+    const xDest =
+      direction === "right" ? SCREEN_WIDTH + 100 : -SCREEN_WIDTH - 100;
     Animated.timing(position, {
-      toValue: { x, y: 0 },
+      toValue: { x: xDest, y: 0 }, // corrigido: definir x explicitamente e y = 0
       duration: SWIPE_OUT_DURATION,
       useNativeDriver: true,
     }).start(() => onSwipeComplete(direction));
   };
 
-  const onSwipeComplete = (direction: "left" | "right") => {
-    // aqui você poderia salvar curtidas/recusas
+  const onSwipeComplete = (_direction: "left" | "right") => {
     const next = index + 1;
     position.setValue({ x: 0, y: 0 });
     setIndex(next);
@@ -151,7 +153,7 @@ export default function Home() {
                   ],
                 },
               ]}
-              {...(panResponder as any).panHandlers}
+              {...panResponderRef.current.panHandlers}
             >
               <Animated.View
                 style={[styles.badge, { left: 20, opacity: nopeOpacity }]}
@@ -184,7 +186,6 @@ export default function Home() {
           );
         }
 
-        // stacked cards
         return (
           <Animated.View
             key={item.id}
@@ -215,6 +216,16 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        onPress={goToLogin}
+        style={styles.loginCornerBtn}
+        accessibilityLabel="Voltar para login"
+        accessibilityRole="button"
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Feather name="chevron-left" size={22} color="#B87B56" />
+      </TouchableOpacity>
+
       <View style={styles.header}>
         <Text style={styles.headerText}>Adoção</Text>
       </View>
@@ -246,6 +257,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#B87B56",
     alignItems: "center",
     paddingTop: 40,
+  },
+  loginCornerBtn: {
+    position: "absolute",
+    top: 44,
+    left: 14,
+    zIndex: 999,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#F8F3EC",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 20,
   },
   header: { width: "100%", alignItems: "center", marginBottom: 8 },
   headerText: { color: "#F8F3EC", fontSize: 22, fontWeight: "700" },

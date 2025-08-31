@@ -1,6 +1,6 @@
 // Tipos globais da aplicação
 
-export type UserRole = "USER" | "ONG";
+export type UserRole = "Adotante" | "ONG";
 
 interface BaseUser {
     id: number;
@@ -13,7 +13,7 @@ interface BaseUser {
 }
 
 export interface Adotante extends BaseUser {
-    role: "USER";
+    role: "Adotante";
     cpf: string;
     age: number;
 }

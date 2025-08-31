@@ -36,7 +36,7 @@ export default function Register() {
             CADASTRAR
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push("/login")}>
           <Text className="text-[#B87B56] font-bold underline text-center">
             Já tem conta? Entrar
           </Text>
