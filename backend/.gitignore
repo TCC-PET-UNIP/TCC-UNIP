@@ -1,5 +1,2 @@
-# SQL DB
-*.sqlite3
-
-# Python cache
-__pycache__/
+__pycache__
+**/migrations
