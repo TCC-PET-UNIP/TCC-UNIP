@@ -1,27 +1,127 @@
 // Tipos globais da aplicação
 
-export type UserRole = "Adotante" | "ONG";
-
-interface BaseUser {
-    id: number;
-    name: string;
-    email: string;
-    password: string;
-    avatar?: string;
-    city: string;
-    state: string;
+export interface Endereco {
+  id: string; // uuid
+  logradouro: string;
+  numero: string; // varchar(10)
+  bairro: string;
+  cidade: string;
+  uf: string; // char(2)
+  cep: string; // char(8)
 }
 
-export interface Adotante extends BaseUser {
-    role: "Adotante";
-    cpf: string;
-    age: number;
+export interface Conta {
+  id: string; // uuid
+  email: string;
+  senha: string;
+  tipo: 'ONG' | 'ADOTANTE'; // varchar(8)
+  data_cadastro: Date;
 }
 
-export interface Ong extends BaseUser {
-    role: "ONG";
-    cnpj: string;
-    description: string;
+// Interfaces para autenticação
+export interface LoginRequest {
+  email: string;
+  senha: string;
 }
 
-export type User = Adotante | Ong;
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  user?: UserProfile;
+  token?: string;
+}
+
+export interface RegisterAdotanteRequest {
+  email: string;
+  senha: string;
+  confirmarSenha: string;
+  nome: string;
+  idade: number;
+  telefone: string;
+  endereco: {
+    logradouro: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    uf: string;
+    cep: string;
+  };
+}
+
+export interface RegisterONGRequest {
+  email: string;
+  senha: string;
+  confirmarSenha: string;
+  nome_fantasia: string;
+  cnpj: string;
+  telefone: string;
+  endereco: {
+    logradouro: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    uf: string;
+    cep: string;
+  };
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  tipo: 'ONG' | 'ADOTANTE';
+  data_cadastro: Date;
+  nome?: string; // Para adotante
+  nome_fantasia?: string; // Para ONG
+  cnpj?: string; // Para ONG
+  idade?: number; // Para adotante
+  telefone: string;
+  endereco: Endereco;
+}
+
+export interface Adotante {
+  id: string; // uuid
+  conta_id: string; // FK -> Conta
+  nome: string;
+  idade: number;
+  telefone: string; // varchar(30)
+  vetor_caracteristicas: number[]; // integer[]
+  endereco_id: string; // FK -> Endereco
+}
+
+export interface ONG {
+  id: string; // uuid
+  conta_id: string; // FK -> Conta
+  nome_fantasia: string;
+  cnpj: string; // char(18)
+  telefone: string; // varchar(30)
+  endereco_id: string; // FK -> Endereco
+}
+
+export interface Pet {
+  id: number; // integer
+  ONG_id: string; // FK -> ONG
+  adotante_id?: string | null; // FK -> Adotante (pode ser null)
+  nome: string;
+  idade: number;
+  descricao: string;
+  status: string; // varchar(15)
+  vetor_caracteristicas: number[];
+  // Campos adicionais para a interface
+  foto?: any; // ImageSourcePropType
+  raca?: string;
+  peso?: string;
+  sexo?: 'Macho' | 'Fêmea';
+  vacinado?: boolean;
+  castrado?: boolean;
+  ong_nome?: string;
+  ong_telefone?: string;
+}
+
+export interface Nota {
+  id: number; // integer
+  nota: number; // real
+  comentario: string;
+  data_avaliacao: Date;
+  adotante_id: string; // FK -> Adotante
+  ong_id: string; // FK -> ONG
+}

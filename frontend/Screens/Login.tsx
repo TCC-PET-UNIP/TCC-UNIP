@@ -12,8 +12,8 @@ import {
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { mockUsers } from "../mockData/mockUsers";
+import authService from "../services/authService";
+import { LoginRequest } from "../types/types";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -26,10 +26,12 @@ export default function Login() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const json = await AsyncStorage.getItem("user");
-        if (json) router.replace("/home");
+        const isLoggedIn = await authService.isLoggedIn();
+        if (isLoggedIn) {
+          router.replace("/home");
+        }
       } catch (err) {
-        console.error("Erro ao lembrar usuário: ", err)
+        console.error("Erro ao verificar sessão: ", err);
       }
     };
     checkSession();
@@ -46,34 +48,59 @@ export default function Login() {
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      Alert.alert("Erro", "Por favor, informe um email válido");
-      return;
-    }
+    setLoading(true);
 
-    if (pwd.length < 6) {
-      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
-      return;
+    try {
+      const loginData: LoginRequest = {
+        email: trimmedEmail,
+        senha: pwd,
+      };
+
+      const response = await authService.login(loginData);
+
+      if (response.success && response.user) {
+        Alert.alert(
+          "Sucesso",
+          `Bem-vindo(a), ${response.user.nome || response.user.nome_fantasia || "usuário"}!`
+        );
+        router.replace("/home");
+      } else {
+        Alert.alert("Erro", response.message);
+      }
+    } catch (err: any) {
+      Alert.alert("Erro", "Erro inesperado ao realizar login");
+      console.error("Erro no login:", err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleMockLogin = async () => {
+    if (loading) return;
 
     setLoading(true);
+
     try {
-      await new Promise((res) => setTimeout(res, 600));
+      // Dados de usuário mockado para teste
+      const mockLoginData: LoginRequest = {
+        email: "teste@pethelper.com",
+        senha: "123456",
+      };
 
-      const user = mockUsers.find(
-        (u) => u.email.toLowerCase() === trimmedEmail && u.password === pwd
-      );
+      const response = await authService.login(mockLoginData);
 
-      if (!user) throw new Error("Email ou senha incorretos");
-
-      const { password: _pw, ...safeUser } = user;
-      await AsyncStorage.setItem("user", JSON.stringify(safeUser));
-
-      Alert.alert("Sucesso", `Bem-vindo(a), ${user.name}`);
-      router.replace("/home");
+      if (response.success && response.user) {
+        Alert.alert(
+          "Demo Login",
+          `Login automático realizado! Bem-vindo(a), ${response.user.nome || response.user.nome_fantasia || "usuário"}!`
+        );
+        router.replace("/home");
+      } else {
+        Alert.alert("Erro", response.message);
+      }
     } catch (err: any) {
-      Alert.alert("Erro", err?.message || "Erro ao realizar login");
+      Alert.alert("Erro", "Erro inesperado ao realizar login automático");
+      console.error("Erro no login automático:", err);
     } finally {
       setLoading(false);
     }
@@ -130,7 +157,7 @@ export default function Login() {
           <TouchableOpacity
             onPress={handleLogin}
             disabled={loading}
-            className="w-full bg-[#8DC6CE] rounded-lg py-3 mb-4"
+            className="w-full bg-[#8DC6CE] rounded-lg py-3 mb-3"
             style={{ opacity: loading ? 0.7 : 1 }}
           >
             {loading ? (
@@ -144,6 +171,35 @@ export default function Login() {
               <Text className="text-white text-center font-bold text-base">
                 ENTRAR
               </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Botão de Login Automático para Demo */}
+          <TouchableOpacity
+            onPress={handleMockLogin}
+            disabled={loading}
+            className="w-full bg-[#ad3434] rounded-lg py-3 mb-4"
+            style={{ opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? (
+              <View className="flex-row items-center justify-center">
+                <ActivityIndicator color="#fff" />
+                <Text className="text-white text-center font-bold text-base ml-2">
+                  ENTRANDO...
+                </Text>
+              </View>
+            ) : (
+              <View className="flex-row items-center justify-center">
+                <Feather
+                  name="zap"
+                  size={16}
+                  color="#fff"
+                  style={{ marginRight: 8 }}
+                />
+                <Text className="text-white text-center font-bold text-base">
+                  DEMO LOGIN
+                </Text>
+              </View>
             )}
           </TouchableOpacity>
 
