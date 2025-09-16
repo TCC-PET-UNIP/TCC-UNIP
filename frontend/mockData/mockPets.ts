@@ -30,7 +30,9 @@ export const mockPets: Pet[] = [
     vacinado: true,
     castrado: true,
     ong_nome: 'ONG Amor Animal',
-    ong_telefone: '(11) 99999-1111'
+    ong_telefone: '(11) 99999-1111',
+    ong_endereco: 'Rua das Flores, 123 - Centro, São Paulo - SP',
+    ong_foto: require('@/assets/images/Dog_Login.png')
   },
   {
     id: 2,
@@ -47,7 +49,9 @@ export const mockPets: Pet[] = [
     vacinado: true,
     castrado: false,
     ong_nome: 'Patinhas Felizes',
-    ong_telefone: '(11) 99999-2222'
+    ong_telefone: '(11) 99999-2222',
+    ong_endereco: 'Av. Paulista, 456 - Bela Vista, São Paulo - SP',
+    ong_foto: require('@/assets/images/Cat.jpg')
   },
   {
     id: 3,
@@ -64,7 +68,9 @@ export const mockPets: Pet[] = [
     vacinado: true,
     castrado: true,
     ong_nome: 'Lar dos Felinos',
-    ong_telefone: '(11) 99999-3333'
+    ong_telefone: '(11) 99999-3333',
+    ong_endereco: 'Rua Augusta, 789 - Consolação, São Paulo - SP',
+    ong_foto: require('@/assets/images/Dog_Pic.jpg')
   },
   {
     id: 4,
@@ -81,7 +87,9 @@ export const mockPets: Pet[] = [
     vacinado: true,
     castrado: true,
     ong_nome: 'ONG Amor Animal',
-    ong_telefone: '(11) 99999-1111'
+    ong_telefone: '(11) 99999-1111',
+    ong_endereco: 'Rua das Flores, 123 - Centro, São Paulo - SP',
+    ong_foto: require('@/assets/images/Dog_Login.png')
   },
   {
     id: 5,
@@ -98,7 +106,9 @@ export const mockPets: Pet[] = [
     vacinado: true,
     castrado: true,
     ong_nome: 'Patinhas Felizes',
-    ong_telefone: '(11) 99999-2222'
+    ong_telefone: '(11) 99999-2222',
+    ong_endereco: 'Av. Paulista, 456 - Bela Vista, São Paulo - SP',
+    ong_foto: require('@/assets/images/Cat.jpg')
   }
 ];
 

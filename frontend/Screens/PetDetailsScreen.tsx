@@ -10,7 +10,11 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import { getPetById, getCaracteristicasTexto } from "../mockData/mockPets";
+import {
+  getPetById,
+  getCaracteristicasTexto,
+  mockPets,
+} from "../mockData/mockPets";
 import { Pet } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
 import authService from "../services/authService";
@@ -27,11 +31,10 @@ export default function PetDetailsScreen() {
 
   useEffect(() => {
     if (id) {
-      const petData = getPetById(Number(id));
+      const numericId = Number(id);
+      const petData = getPetById(numericId);
       setPet(petData || null);
     }
-
-    // Carregar perfil do usuário para a navegação
     loadUserProfile();
   }, [id]);
 
@@ -86,7 +89,9 @@ export default function PetDetailsScreen() {
   if (!pet) {
     return (
       <View className="flex-1 justify-center items-center bg-[#B87B56]">
-        <Text className="text-lg text-white mb-5">Pet não encontrado</Text>
+        <Text className="text-lg text-white mb-5">
+          Pet não encontrado (ID: {id})
+        </Text>
         <TouchableOpacity
           onPress={handleVoltar}
           className="bg-white px-5 py-2.5 rounded-lg"
@@ -97,13 +102,19 @@ export default function PetDetailsScreen() {
     );
   }
 
-  const caracteristicas = getCaracteristicasTexto(pet.vetor_caracteristicas);
+  const caracteristicas = pet
+    ? getCaracteristicasTexto(pet.vetor_caracteristicas)
+    : [];
 
   return (
-    <View className="flex-1 bg-[#B87B56]">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+    <View className="flex-1 bg-amber-700">
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         {/* Header com título do pet */}
-        <View className="flex-row items-center justify-between pt-16 pb-5 px-5 bg-[#B87B56]">
+        <View className="flex-row items-center justify-between pt-16 pb-5 px-5">
           <TouchableOpacity
             onPress={handleVoltar}
             className="p-2 rounded-xl bg-white/20"
@@ -117,25 +128,28 @@ export default function PetDetailsScreen() {
         </View>
 
         {/* Imagem principal */}
-        <View className="h-72 mx-5 rounded-xl overflow-hidden mb-4">
-          <Image
-            source={petImages[selectedImageIndex]}
-            className="w-full h-full"
-            resizeMode="cover"
-          />
+        <View className="mx-5 mb-4">
+          <View className="h-72 rounded-xl overflow-hidden">
+            <Image
+              source={petImages[selectedImageIndex]}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
+          </View>
         </View>
 
         {/* Miniaturas das imagens */}
-        <View className="flex-row justify-center px-5 mb-5 gap-2.5">
+        <View className="flex-row justify-center px-5 mb-8 space-x-3">
           {petImages.map((image, index) => (
             <TouchableOpacity
               key={index}
-              className={`w-15 h-15 rounded-lg overflow-hidden border-2 ${
-                selectedImageIndex === index
-                  ? "border-white"
-                  : "border-transparent"
-              }`}
               onPress={() => setSelectedImageIndex(index)}
+              className="p-1 w-20 h-20 rounded-lg overflow-hidden"
+              style={{
+                borderWidth: selectedImageIndex === index ? 2 : 0,
+                borderColor:
+                  selectedImageIndex === index ? "#FFFFFF" : "transparent",
+              }}
             >
               <Image
                 source={image}
@@ -147,119 +161,183 @@ export default function PetDetailsScreen() {
         </View>
 
         {/* Card de informações do pet */}
-        <View className="bg-white mx-5 rounded-2xl p-5 mb-5 shadow-lg">
-          <Text className="text-xl font-bold text-gray-800 mb-4 text-center">
-            Informações do Pet
-          </Text>
+        <View className="mx-5 mb-5">
+          <View className="bg-white rounded-xl p-5 shadow-sm">
+            <Text className="text-xl font-bold text-gray-800 mb-4 text-center">
+              Informações do Pet
+            </Text>
 
-          <View className="gap-3">
-            <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
-              <Text className="text-base text-gray-600 font-medium flex-1">
-                Nome:
-              </Text>
-              <Text className="text-base text-gray-800 font-semibold flex-2 text-right">
-                {pet?.nome}
-              </Text>
+            {/* Nome */}
+            <View className="mb-3">
+              <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
+                <Text className="text-base text-gray-600 font-medium">
+                  Nome:
+                </Text>
+                <Text className="text-base text-gray-800 font-semibold">
+                  {pet?.nome}
+                </Text>
+              </View>
             </View>
 
-            <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
-              <Text className="text-base text-gray-600 font-medium flex-1">
-                Idade:
-              </Text>
-              <Text className="text-base text-gray-800 font-semibold flex-2 text-right">
-                {pet?.idade} {pet?.idade === 1 ? "ano" : "anos"}
-              </Text>
+            {/* Idade */}
+            <View className="mb-3">
+              <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
+                <Text className="text-base text-gray-600 font-medium">
+                  Idade:
+                </Text>
+                <Text className="text-base text-gray-800 font-semibold">
+                  {pet?.idade} {pet?.idade === 1 ? "ano" : "anos"}
+                </Text>
+              </View>
             </View>
 
+            {/* Raça */}
             {pet?.raca && (
-              <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
-                <Text className="text-base text-gray-600 font-medium flex-1">
-                  Raça:
-                </Text>
-                <Text className="text-base text-gray-800 font-semibold flex-2 text-right">
-                  {pet.raca}
-                </Text>
+              <View className="mb-3">
+                <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
+                  <Text className="text-base text-gray-600 font-medium">
+                    Raça:
+                  </Text>
+                  <Text className="text-base text-gray-800 font-semibold">
+                    {pet.raca}
+                  </Text>
+                </View>
               </View>
             )}
 
+            {/* Sexo */}
             {pet?.sexo && (
-              <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
-                <Text className="text-base text-gray-600 font-medium flex-1">
-                  Sexo:
-                </Text>
-                <Text className="text-base text-gray-800 font-semibold flex-2 text-right">
-                  {pet.sexo}
-                </Text>
+              <View className="mb-3">
+                <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
+                  <Text className="text-base text-gray-600 font-medium">
+                    Sexo:
+                  </Text>
+                  <Text className="text-base text-gray-800 font-semibold">
+                    {pet.sexo}
+                  </Text>
+                </View>
               </View>
             )}
 
-            <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
-              <Text className="text-base text-gray-600 font-medium flex-1">
-                Condição de Saúde:
-              </Text>
-              <Text className="text-base text-gray-800 font-semibold flex-2 text-right">
-                {pet?.vacinado
-                  ? "Saudável, vacinas em dia"
-                  : "Necessita cuidados"}
-              </Text>
+            {/* Peso */}
+            {pet?.peso && (
+              <View className="mb-3">
+                <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
+                  <Text className="text-base text-gray-600 font-medium">
+                    Peso:
+                  </Text>
+                  <Text className="text-base text-gray-800 font-semibold">
+                    {pet.peso}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Saúde */}
+            <View className="mb-3">
+              <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
+                <Text className="text-base text-gray-600 font-medium">
+                  Vacinado:
+                </Text>
+                <Text className="text-base text-gray-800 font-semibold">
+                  {pet?.vacinado ? "Sim" : "Não"}
+                </Text>
+              </View>
             </View>
 
-            <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
-              <Text className="text-base text-gray-600 font-medium flex-1">
-                Castrado:
-              </Text>
-              <Text className="text-base text-gray-800 font-semibold flex-2 text-right">
-                {pet?.castrado ? "Sim" : "Não"}
-              </Text>
+            {/* Castrado */}
+            <View className="mb-3">
+              <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
+                <Text className="text-base text-gray-600 font-medium">
+                  Castrado:
+                </Text>
+                <Text className="text-base text-gray-800 font-semibold">
+                  {pet?.castrado ? "Sim" : "Não"}
+                </Text>
+              </View>
             </View>
 
-            <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
-              <Text className="text-base text-gray-600 font-medium flex-1">
-                Comportamento:
-              </Text>
-              <Text className="text-base text-gray-800 font-semibold flex-2 text-right">
-                Sociável com crianças e outros
-              </Text>
-            </View>
+            {/* Características */}
+            {caracteristicas.length > 0 && (
+              <View className="mb-3">
+                <View className="py-2 border-b border-gray-200">
+                  <Text className="text-base text-gray-600 font-medium mb-2">
+                    Características:
+                  </Text>
+                  <View className="flex-row flex-wrap">
+                    {caracteristicas.map((caracteristica, index) => (
+                      <View
+                        key={index}
+                        className="bg-teal-100 rounded-full px-3 py-1 mr-2 mb-2"
+                      >
+                        <Text className="text-sm text-teal-700">
+                          {caracteristica}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            )}
 
-            <View className="py-3 border-b border-gray-100">
-              <Text className="text-base text-gray-600 font-medium flex-1">
-                Descrição:
-              </Text>
-              <Text className="text-sm text-gray-800 leading-6 mt-2 text-justify">
-                {pet?.descricao || "Informações não disponíveis"}
-              </Text>
-            </View>
+            {/* Descrição */}
+            {pet?.descricao && (
+              <View className="mb-3">
+                <View className="py-2">
+                  <Text className="text-base text-gray-600 font-medium mb-2">
+                    Descrição:
+                  </Text>
+                  <Text className="text-sm text-gray-700 leading-5 text-justify">
+                    {pet.descricao}
+                  </Text>
+                </View>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* Card da clínica */}
-        <View className="bg-white mx-5 rounded-2xl p-5 mb-5 shadow-lg">
-          <View className="flex-row justify-between items-center mb-4">
-            <View>
-              <Text className="text-lg font-bold text-gray-800 mb-1">
-                Clínica Vida Animal
-              </Text>
-              <Text className="text-sm text-gray-600">
-                Rua das Flores, 123, Centro
-              </Text>
+        {/* Card da ONG */}
+        <View className="mx-5 mb-5">
+          <View className="bg-white rounded-xl p-5 shadow-sm">
+            <View className="flex-row justify-between items-start mb-4">
+              <View className="flex-1 mr-4">
+                <Text className="text-lg font-bold text-gray-800 mb-1">
+                  {pet?.ong_nome || "ONG Responsável"}
+                </Text>
+                {pet?.ong_endereco && (
+                  <Text className="text-sm text-gray-600 mb-2 leading-5">
+                    {pet.ong_endereco}
+                  </Text>
+                )}
+                {pet?.ong_telefone && (
+                  <Text className="text-sm text-gray-600">
+                    📞 {pet.ong_telefone}
+                  </Text>
+                )}
+              </View>
+              <View className="w-16 h-16 bg-gray-100 rounded-lg justify-center items-center overflow-hidden">
+                {pet?.ong_foto ? (
+                  <Image
+                    source={pet.ong_foto}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Feather name="heart" size={24} color="#8DC6CE" />
+                )}
+              </View>
             </View>
-            <View className="w-15 h-15 bg-gray-100 rounded-lg justify-center items-center">
-              <Image
-                source={require("@/assets/images/Dog_Login.png")}
-                className="w-10 h-10"
-                resizeMode="contain"
-              />
-            </View>
+
+            <TouchableOpacity
+              className="bg-teal-400 py-3 rounded-lg items-center"
+              onPress={handleAgendarVisita}
+            >
+              <Text className="text-white text-base font-bold">
+                Entrar em Contato
+              </Text>
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity className="bg-[#8DC6CE] py-3 rounded-lg items-center">
-            <Text className="text-white text-base font-bold">Ver Mais</Text>
-          </TouchableOpacity>
         </View>
-
-        {/* Espaço para navegação inferior */}
-        <View className="h-25" />
       </ScrollView>
 
       {/* Navegação inferior */}

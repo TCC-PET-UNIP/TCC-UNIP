@@ -115,6 +115,8 @@ export interface Pet {
   castrado?: boolean;
   ong_nome?: string;
   ong_telefone?: string;
+  ong_endereco?: string;
+  ong_foto?: any; // ImageSourcePropType
 }
 
 export interface Nota {
