@@ -4,22 +4,51 @@ from .models import Conta, Endereco, Ong, Adotante, Nota, Pets
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conta
-        fields = '__all__'
+        fields = ['id', 'email', 'senha', 'tipo']
+        read_only_fields = ['tipo']
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Endereco
-        fields = '__all__'
+        fields = ['id', 'logradouro', 'numero', 'bairro', 'cidade', 'uf', 'cep']
 
 class OngSerializer(serializers.ModelSerializer):
+    conta = AccountSerializer(write_only=True)
+    endereco = AddressSerializer(write_only=True)
+
     class Meta:
         model = Ong
-        fields = '__all__'
+        fields = ['id', 'conta', 'nome_fantasia', 'cnpj', 'telefone', 'endereco']
+
+    def create(self, validated_data):
+        conta_data = validated_data.pop('conta')
+        endereco_data = validated_data.pop('endereco')
+
+        conta = Conta.objects.create(**conta_data, tipo='ONG')
+        endereco = Endereco.objects.create(**endereco_data)
+        ong = Ong.objects.create(conta_id=conta, endereco_id=endereco, **validated_data)
+
+        self._created_account = conta
+        return ong
 
 class AdotanteSerializer(serializers.ModelSerializer):
+    conta = AccountSerializer(write_only=True)
+    endereco = AddressSerializer(write_only=True)
+
     class Meta:
         model = Adotante
-        fields = '__all__'
+        fields = ['id', 'conta', 'nome', 'idade', 'telefone', 'vetor_caracteristicas', 'endereco']
+    
+    def create(self, validated_data):
+        conta_data = validated_data.pop('conta')
+        endereco_data = validated_data.pop('endereco')
+
+        conta = Conta.objects.create(**conta_data, tipo='ADOTANTE')
+        endereco = Endereco.objects.create(**endereco_data)
+        adotante = Adotante.objects.create(conta_id=conta, endereco_id=endereco, **validated_data)
+
+        self._created_account = conta
+        return adotante
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:

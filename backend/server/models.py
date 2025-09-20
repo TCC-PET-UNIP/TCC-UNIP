@@ -4,7 +4,7 @@ from uuid_extensions import uuid7
 
 class Conta(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
-    email = models.CharField(max_length=70)
+    email = models.CharField(max_length=70, unique=True)
     senha = models.CharField(max_length=15)
     tipo = models.CharField(max_length=8, choices=[('ONG', 'ONG'), ('ADOTANTE', 'ADOTANTE')])
     data_cadastro = models.DateTimeField(auto_now_add=True)
@@ -22,7 +22,7 @@ class Ong(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
     conta_id = models.OneToOneField(Conta, on_delete=models.CASCADE)
     nome_fantasia = models.TextField()
-    cnpj = models.CharField(max_length=18)
+    cnpj = models.CharField(max_length=18, unique=True)
     telefone = models.CharField(max_length=30)
     endereco_id = models.OneToOneField(Endereco, on_delete=models.CASCADE)
 
