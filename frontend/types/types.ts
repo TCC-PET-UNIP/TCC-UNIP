@@ -28,13 +28,15 @@ export interface LoginResponse {
   success: boolean;
   message: string;
   user?: UserProfile;
-  token?: string;
+  access?: string;
+  refresh?: string;
 }
 
 export interface RegisterAdotanteRequest {
-  email: string;
-  senha: string;
-  confirmarSenha: string;
+  conta: {
+    email: string;
+    senha: string;
+  };
   nome: string;
   idade: number;
   telefone: string;
@@ -49,9 +51,10 @@ export interface RegisterAdotanteRequest {
 }
 
 export interface RegisterONGRequest {
-  email: string;
-  senha: string;
-  confirmarSenha: string;
+  conta: {
+    email: string;
+    senha: string;
+  };
   nome_fantasia: string;
   cnpj: string;
   telefone: string;
