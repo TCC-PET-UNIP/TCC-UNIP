@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from .models import Conta, Endereco, Ong, Adotante, Nota, Pets
 
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    senha = serializers.CharField()
+
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conta
