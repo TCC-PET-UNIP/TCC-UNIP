@@ -58,6 +58,13 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
         <Feather name="bell" size={24} color={getIconColor("notificacoes")} />
       </TouchableOpacity>
 
+      <TouchableOpacity
+        className="p-2 rounded-xl items-center justify-center"
+        onPress={() => router.push("/profile")}
+      >
+        <Feather name="user" size={24} color={getIconColor("profile")} />
+      </TouchableOpacity>
+
       {/* Configurações */}
       <TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"

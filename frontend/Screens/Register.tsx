@@ -89,14 +89,26 @@ export default function Register() {
   const handleRegister = async () => {
     if (loading) return;
 
+    // Validação de confirmação de senha
+    if (senha !== confirmarSenha) {
+      Alert.alert("Erro", "As senhas não coincidem");
+      return;
+    }
+
+    if (senha.length < 6) {
+      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (userType === "ADOTANTE") {
         const registerData: RegisterAdotanteRequest = {
-          email: email.trim().toLowerCase(),
-          senha,
-          confirmarSenha,
+          conta: {
+            email: email.trim().toLowerCase(),
+            senha,
+          },
           nome,
           idade: parseInt(idade),
           telefone,
@@ -121,9 +133,10 @@ export default function Register() {
         }
       } else {
         const registerData: RegisterONGRequest = {
-          email: email.trim().toLowerCase(),
-          senha,
-          confirmarSenha,
+          conta: {
+            email: email.trim().toLowerCase(),
+            senha,
+          },
           nome_fantasia: nomeFantasia,
           cnpj: cnpj.replace(/\D/g, ""),
           telefone,

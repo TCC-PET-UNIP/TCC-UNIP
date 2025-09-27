@@ -74,7 +74,7 @@ export default function Home() {
   return (
     <View className="flex-1 bg-orange-50">
       {/* Header */}
-      <View className="flex-row justify-between items-center pt-16 pb-5 px-5 bg-orange-50">
+      <View className="flex-row justify-between items-center pt-10 pb-5 px-5 bg-orange-50">
         <Text className="text-xl font-bold text-gray-800 flex-1">
           Pets pra você
         </Text>

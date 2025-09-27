@@ -14,7 +14,7 @@ export interface Conta {
   id: string; // uuid
   email: string;
   senha: string;
-  tipo: 'ONG' | 'ADOTANTE'; // varchar(8)
+  tipo: "ONG" | "ADOTANTE"; // varchar(8)
   data_cadastro: Date;
 }
 
@@ -71,7 +71,7 @@ export interface RegisterONGRequest {
 export interface UserProfile {
   id: string;
   email: string;
-  tipo: 'ONG' | 'ADOTANTE';
+  tipo: "ONG" | "ADOTANTE";
   data_cadastro: Date;
   nome?: string; // Para adotante
   nome_fantasia?: string; // Para ONG
@@ -113,7 +113,7 @@ export interface Pet {
   foto?: any; // ImageSourcePropType
   raca?: string;
   peso?: string;
-  sexo?: 'Macho' | 'Fêmea';
+  sexo?: "Macho" | "Fêmea";
   vacinado?: boolean;
   castrado?: boolean;
   ong_nome?: string;
