@@ -59,7 +59,7 @@ class NoteSerializer(serializers.ModelSerializer):
         model = Nota
         fields = '__all__'
 
-class PetsSerializer(serializers.ModelSerializer):
+class PetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pets
         fields = '__all__'

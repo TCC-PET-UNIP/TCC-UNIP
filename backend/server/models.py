@@ -25,6 +25,7 @@ class Ong(models.Model):
     cnpj = models.CharField(max_length=18, unique=True)
     telefone = models.CharField(max_length=30)
     endereco_id = models.OneToOneField(Endereco, on_delete=models.CASCADE)
+    descricao = models.TextField(null=True, blank=True)
 
 class Adotante(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
