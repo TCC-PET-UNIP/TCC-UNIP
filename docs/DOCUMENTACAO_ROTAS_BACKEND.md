@@ -27,19 +27,19 @@ http://localhost:8000/server/rota_generica
 ```json
 {
   "conta": {
-    "email": "contato@ong.com",
-    "senha": "senha123"
+    "email": "admin",
+    "senha": "teste"
   },
-  "nome_fantasia": "ONG Exemplo",
-  "cnpj": "12.345.678/0001-99",
-  "telefone": "(11) 99999-9999",
+  "nome_fantasia": "umnomefantasia",
+  "cnpj": "99.999.999/9999-99",
+  "telefone": "(99) 99999-9999",
   "endereco": {
-    "logradouro": "Rua das Flores",
-    "numero": "123",
-    "bairro": "Centro",
-    "cidade": "São Paulo",
+    "logradouro": "Praça Quintino Bocaiúva",
+    "numero": "688",
+    "bairro": "Vila Arens I",
+    "cidade": "Jundiaí",
     "uf": "SP",
-    "cep": "01000-000"
+    "cep": "13201-759"
   }
 }
 ```
@@ -48,10 +48,19 @@ http://localhost:8000/server/rota_generica
 ```json
 {
   "user": {
-    "id": 1,
-    "nome_fantasia": "ONG Exemplo",
-    "cnpj": "12.345.678/0001-99",
-    "telefone": "(11) 99999-9999"
+    "id": "068dc273-f2be-7f4e-8000-b9c0821c43ae",
+    "nome_fantasia": "umnomefantasia",
+    "cnpj": "99.999.999/9999-99",
+    "telefone": "(99) 99999-9999",
+    "endereco": {
+      "id": "068dc273-f2b8-7800-8000-3b0fee1a843e",
+      "logradouro": "Praça Quintino Bocaiúva",
+      "numero": "688",
+      "bairro": "Vila Arens I",
+      "cidade": "Jundiaí",
+      "uf": "SP",
+      "cep": "13201-759"
+    }
   },
   "refresh": "<token_refresh>",
   "access": "<token_access>"
@@ -61,32 +70,35 @@ http://localhost:8000/server/rota_generica
 #### Possíveis erros:
 - `400 Bad Request` → Algum campo obrigatório está faltando ou inválido.
 - `500 Internal Server Error` → Falha interna ao salvar os dados.
+
+#### OBS:
+- É encorajado o uso de storage local/cache para salvar os dados da requisição, pois não existem rotas específicas para retornar os dados dos usuarios
 
 ---
 
 ### 2. Registrar Adotante
 - **Rota:** `/server/register_adopter`
 - **Método:** `POST`
-- **Descrição:** Cria uma conta para um adotante (pessoa interessada em adotar).
+- **Descrição:** Cria uma conta para um adotante.
 
 #### Request (JSON esperado):
 ```json
 {
   "conta": {
-    "email": "joao@email.com",
-    "senha": "senha123"
+    "email": "adotante@email.com",
+    "senha": "teste123"
   },
-  "nome": "João Silva",
-  "idade": "30",
-  "telefone": "(11) 98888-7777",
-  "vetor_caracteristicas": [0,1,4,6,2,1,5],
+  "nome": "John Doe da Silva",
+  "idade": "24",
+  "telefone": "(99) 99999-9999",
+  "vetor_caracteristicas": [1,1,1,1,1],
   "endereco": {
-    "logradouro": "Rua das Palmeiras",
-    "numero": "45",
-    "bairro": "Jardins",
-    "cidade": "São Paulo",
+    "logradouro": "Praça Quintino Bocaiúva",
+    "numero": "688",
+    "bairro": "Vila Arens I",
+    "cidade": "Jundiaí",
     "uf": "SP",
-    "cep": "01400-000"
+    "cep": "13201-759"
   }
 }
 ```
@@ -95,11 +107,26 @@ http://localhost:8000/server/rota_generica
 ```json
 {
   "user": {
-    "id": "2",
-    "nome": "João Silva",
-    "idade": "30",
-    "telefone": "(11) 98888-7777",
-    "vetor_caracteristicas": "responsável, carinhoso"
+    "id": "068dc289-5d15-7a92-8000-597a4e6e2dbe",
+    "nome": "John Doe da Silva",
+    "idade": 24,
+    "telefone": "(99) 99999-9999",
+    "vetor_caracteristicas": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "endereco": {
+      "id": "068dc289-5d0c-7f00-8000-c1f47244d10e",
+      "logradouro": "Praça Quintino Bocaiúva",
+      "numero": "688",
+      "bairro": "Vila Arens I",
+      "cidade": "Jundiaí",
+      "uf": "SP",
+      "cep": "13201-759"
+    }
   },
   "refresh": "<token_refresh>",
   "access": "<token_access>"
@@ -109,6 +136,9 @@ http://localhost:8000/server/rota_generica
 #### Possíveis erros:
 - `400 Bad Request` → Algum campo obrigatório está faltando ou inválido.
 - `500 Internal Server Error` → Falha interna ao salvar os dados.
+
+#### OBS:
+- É encorajado o uso de storage local/cache para salvar os dados da requisição, pois não existem rotas específicas para retornar os dados dos usuarios
 
 ---
 
@@ -120,8 +150,8 @@ http://localhost:8000/server/rota_generica
 #### Request:
 ```json
 {
-  "email": "joao@email.com",
-  "senha": "senha123"
+  "email": "adotante@email.com",
+  "senha": "teste123"
 }
 ```
 
@@ -129,10 +159,29 @@ http://localhost:8000/server/rota_generica
 ```json
 {
   "user": {
-    "id": 2,
-    "email": "joao@email.com",
-    "senha": "senha123",
-    "tipo": "ADOTANTE"
+    "ong": null,
+    "adotante": {
+      "id": "068dc289-5d15-7a92-8000-597a4e6e2dbe",
+      "nome": "John Doe da Silva",
+      "idade": 24,
+      "telefone": "(99) 99999-9999",
+      "vetor_caracteristicas": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "endereco": {
+        "id": "068dc289-5d0c-7f00-8000-c1f47244d10e",
+        "logradouro": "Praça Quintino Bocaiúva",
+        "numero": "688",
+        "bairro": "Vila Arens I",
+        "cidade": "Jundiaí",
+        "uf": "SP",
+        "cep": "13201-759"
+      }
+    }
   },
   "refresh": "<token_refresh>",
   "access": "<token_access>"
@@ -142,6 +191,10 @@ http://localhost:8000/server/rota_generica
 #### Possíveis erros:
 - `401 Unauthorized` → Credenciais inválidas (email não encontrado ou senha incorreta).
 - `400 Bad Request` → Estrutura do JSON incorreta.
+- `500 Internal Server Error` → Falha interna ao salvar os dados.
+
+#### OBS:
+- É encorajado o uso de storage local/cache para salvar os dados da requisição, pois não existem rotas específicas para retornar os dados dos usuarios
 
 ---
 
@@ -191,7 +244,7 @@ Authorization: Bearer <access_token>
 
 ## 👨‍💻 Como rodar o projeto localmente
 
-OBS: Antes de qualquer passo certifique-se que tenha instalado o docker-desktop e o python
+OBS: Antes de qualquer passo certifique-se que tenha instalado o docker-desktop e o python. Caso desejar instale também o pgadmin
 
 1. Clone o repositório:
    ```bash
@@ -202,7 +255,7 @@ OBS: Antes de qualquer passo certifique-se que tenha instalado o docker-desktop 
    cd backend
    ```
 3. Instale as dependências:
-   ```bash
+   ```bashbackend/.gitignore
    pip install -r requirements.txt
    ```
 4. Inicie o container docker:
