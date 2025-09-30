@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from .serializers import OngSerializer, AdotanteSerializer, LoginSerializer, AccountSerializer
+from .serializers import OngSerializer, AdotanteSerializer, LoginSerializer, AccountOutputSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Conta
 
@@ -42,7 +42,7 @@ def login(req):
     senha = serializer.validated_data['senha']
 
     try:
-        account = Conta.objects.get(email=email)
+        account = Conta.objects.select_related("ong__endereco_id", "adotante__endereco_id").get(email=email)
     except Conta.DoesNotExist:
         return Response({"error": "Credenciais inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -52,7 +52,7 @@ def login(req):
     JWT_token = RefreshToken.for_user(account)
 
     return Response({
-        'user': AccountSerializer(account).data,
+        'user': AccountOutputSerializer(account).data,
         'refresh': str(JWT_token),
         'access': str(JWT_token.access_token)
     }, status=status.HTTP_200_OK)

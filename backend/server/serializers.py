@@ -18,7 +18,7 @@ class AddressSerializer(serializers.ModelSerializer):
 
 class OngSerializer(serializers.ModelSerializer):
     conta = AccountSerializer(write_only=True)
-    endereco = AddressSerializer(write_only=True)
+    endereco = AddressSerializer(source='endereco_id')
 
     class Meta:
         model = Ong
@@ -26,7 +26,7 @@ class OngSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         conta_data = validated_data.pop('conta')
-        endereco_data = validated_data.pop('endereco')
+        endereco_data = validated_data.pop('endereco_id')
 
         conta = Conta.objects.create(**conta_data, tipo='ONG')
         endereco = Endereco.objects.create(**endereco_data)
@@ -37,7 +37,7 @@ class OngSerializer(serializers.ModelSerializer):
 
 class AdotanteSerializer(serializers.ModelSerializer):
     conta = AccountSerializer(write_only=True)
-    endereco = AddressSerializer(write_only=True)
+    endereco = AddressSerializer(source='endereco_id')
 
     class Meta:
         model = Adotante
@@ -45,7 +45,7 @@ class AdotanteSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         conta_data = validated_data.pop('conta')
-        endereco_data = validated_data.pop('endereco')
+        endereco_data = validated_data.pop('endereco_id')
 
         conta = Conta.objects.create(**conta_data, tipo='ADOTANTE')
         endereco = Endereco.objects.create(**endereco_data)
@@ -53,6 +53,14 @@ class AdotanteSerializer(serializers.ModelSerializer):
 
         self._created_account = conta
         return adotante
+
+class AccountOutputSerializer(serializers.ModelSerializer):
+    ong = OngSerializer()
+    adotante = AdotanteSerializer()
+
+    class Meta:
+        model = Conta
+        fields = ['ong','adotante']
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
