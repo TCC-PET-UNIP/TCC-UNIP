@@ -16,7 +16,12 @@ import Feather from "@expo/vector-icons/Feather";
 import authService from "../services/authService";
 import { UserProfile } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
-import { isValidEmail, isValidAge, isValidCEP, isValidUF } from "../utils/validators";
+import {
+  isValidEmail,
+  isValidAge,
+  isValidCEP,
+  isValidUF,
+} from "../utils/validators";
 import {
   formatPhone,
   formatCEP,
