@@ -122,6 +122,21 @@ export interface Pet {
   ong_foto?: any; // ImageSourcePropType
 }
 
+export interface AdotanteQuestionario {
+  tipo_imovel: string;
+  localizacao: string;
+  possui_area_externa: string;
+  imovel_telado: string;
+  quantidade_moradores: string;
+  ha_criancas: string;
+  ha_idosos: string;
+  presenca_outros_animais: string;
+  experiencia_animais: string;
+  tempo_diario_disponivel: string;
+  tempo_fora_casa: string;
+  aceita_necessidades_especiais: string;
+}
+
 export interface Nota {
   id: number; // integer
   nota: number; // real

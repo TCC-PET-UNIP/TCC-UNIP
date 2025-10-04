@@ -15,6 +15,24 @@ import { router } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
 import authService from "../services/authService";
 import { RegisterAdotanteRequest, RegisterONGRequest } from "../types/types";
+import {
+  formatCNPJ,
+  formatCEP,
+  formatPhone,
+  formatEmail,
+  removeFormatting,
+} from "../utils/formatters";
+import {
+  isValidEmail,
+  isValidPassword,
+  isPasswordMatch,
+  isValidCNPJ,
+  isValidCEP,
+  isValidPhone,
+  isValidAge,
+  isNotEmpty,
+  isValidName,
+} from "../utils/validators";
 
 export default function Register() {
   const [userType, setUserType] = useState<"ADOTANTE" | "ONG">("ADOTANTE");
@@ -44,43 +62,22 @@ export default function Register() {
   const [uf, setUf] = useState("");
   const [cep, setCep] = useState("");
 
-  const formatCNPJ = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
-    const formatted = cleaned.replace(
-      /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-      "$1.$2.$3/$4-$5"
-    );
-    return formatted;
-  };
-
-  const formatCEP = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
-    const formatted = cleaned.replace(/^(\d{5})(\d{3})$/, "$1-$2");
-    return formatted;
-  };
-
-  const formatPhone = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
-    const formatted = cleaned.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
-    return formatted;
-  };
-
   const handleCnpjChange = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
+    const cleaned = removeFormatting(text);
     if (cleaned.length <= 14) {
       setCnpj(formatCNPJ(cleaned));
     }
   };
 
   const handleCepChange = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
+    const cleaned = removeFormatting(text);
     if (cleaned.length <= 8) {
       setCep(formatCEP(cleaned));
     }
   };
 
   const handlePhoneChange = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
+    const cleaned = removeFormatting(text);
     if (cleaned.length <= 11) {
       setTelefone(formatPhone(cleaned));
     }
@@ -89,14 +86,67 @@ export default function Register() {
   const handleRegister = async () => {
     if (loading) return;
 
-    // Validação de confirmação de senha
-    if (senha !== confirmarSenha) {
+    // Validações usando os utils
+    if (!isValidEmail(email)) {
+      Alert.alert("Erro", "Email inválido");
+      return;
+    }
+
+    if (!isValidPassword(senha)) {
+      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+
+    if (!isPasswordMatch(senha, confirmarSenha)) {
       Alert.alert("Erro", "As senhas não coincidem");
       return;
     }
 
-    if (senha.length < 6) {
-      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
+    if (!isValidPhone(telefone)) {
+      Alert.alert("Erro", "Telefone inválido");
+      return;
+    }
+
+    if (!isValidCEP(cep)) {
+      Alert.alert("Erro", "CEP inválido");
+      return;
+    }
+
+    // Validações específicas por tipo de usuário
+    if (userType === "ADOTANTE") {
+      if (!isValidName(nome)) {
+        Alert.alert(
+          "Erro",
+          "Nome inválido (apenas letras e espaços, mínimo 2 caracteres)"
+        );
+        return;
+      }
+
+      if (!isValidAge(idade)) {
+        Alert.alert("Erro", "Idade deve estar entre 16 e 120 anos");
+        return;
+      }
+    } else {
+      if (!isNotEmpty(nomeFantasia)) {
+        Alert.alert("Erro", "Nome fantasia da ONG é obrigatório");
+        return;
+      }
+
+      if (!isValidCNPJ(cnpj)) {
+        Alert.alert("Erro", "CNPJ inválido");
+        return;
+      }
+    }
+
+    // Validações de endereço
+    if (
+      !isNotEmpty(logradouro) ||
+      !isNotEmpty(numero) ||
+      !isNotEmpty(bairro) ||
+      !isNotEmpty(cidade) ||
+      !isNotEmpty(uf)
+    ) {
+      Alert.alert("Erro", "Todos os campos de endereço são obrigatórios");
       return;
     }
 
@@ -106,19 +156,19 @@ export default function Register() {
       if (userType === "ADOTANTE") {
         const registerData: RegisterAdotanteRequest = {
           conta: {
-            email: email.trim().toLowerCase(),
+            email: formatEmail(email),
             senha,
           },
-          nome,
+          nome: nome.trim(),
           idade: parseInt(idade),
-          telefone,
+          telefone: removeFormatting(telefone),
           endereco: {
-            logradouro,
-            numero,
-            bairro,
-            cidade,
+            logradouro: logradouro.trim(),
+            numero: numero.trim(),
+            bairro: bairro.trim(),
+            cidade: cidade.trim(),
             uf: uf.toUpperCase(),
-            cep: cep.replace(/\D/g, ""),
+            cep: removeFormatting(cep),
           },
         };
 
@@ -126,7 +176,10 @@ export default function Register() {
 
         if (response.success) {
           Alert.alert("Sucesso", response.message, [
-            { text: "OK", onPress: () => router.replace("/home") },
+            {
+              text: "OK",
+              onPress: () => router.replace("/adotante-questions"),
+            },
           ]);
         } else {
           Alert.alert("Erro", response.message);
@@ -134,19 +187,19 @@ export default function Register() {
       } else {
         const registerData: RegisterONGRequest = {
           conta: {
-            email: email.trim().toLowerCase(),
+            email: formatEmail(email),
             senha,
           },
-          nome_fantasia: nomeFantasia,
-          cnpj: cnpj.replace(/\D/g, ""),
-          telefone,
+          nome_fantasia: nomeFantasia.trim(),
+          cnpj: removeFormatting(cnpj),
+          telefone: removeFormatting(telefone),
           endereco: {
-            logradouro,
-            numero,
-            bairro,
-            cidade,
+            logradouro: logradouro.trim(),
+            numero: numero.trim(),
+            bairro: bairro.trim(),
+            cidade: cidade.trim(),
             uf: uf.toUpperCase(),
-            cep: cep.replace(/\D/g, ""),
+            cep: removeFormatting(cep),
           },
         };
 
@@ -166,6 +219,30 @@ export default function Register() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fillTestData = () => {
+    if (userType === "ADOTANTE") {
+      setNome("João Silva Santos");
+      setIdade("28");
+    } else {
+      setNomeFantasia("ONG Amor Animal");
+      setCnpj("11.444.777/0001-61");
+    }
+
+    // Dados comuns
+    setEmail("teste@email.com");
+    setSenha("123456");
+    setConfirmarSenha("123456");
+    setTelefone("(11) 99999-9999");
+
+    // Endereço
+    setLogradouro("Rua das Flores");
+    setNumero("123");
+    setBairro("Centro");
+    setCidade("São Paulo");
+    setUf("SP");
+    setCep("01234-567");
   };
 
   return (
@@ -384,6 +461,16 @@ export default function Register() {
               placeholderTextColor="#B87B56"
               className="w-full bg-[#F8F3EC] border border-[#B87B56] rounded-lg px-4 py-3 mb-6 text-[#B87B56] font-semibold"
             />
+
+            {/* Botão de Preenchimento Automático (Desenvolvimento) */}
+            <TouchableOpacity
+              onPress={fillTestData}
+              className="w-full bg-yellow-500 rounded-lg py-2 mb-3"
+            >
+              <Text className="text-white text-center font-bold text-sm">
+                🚧 PREENCHER DADOS DE TESTE 🚧
+              </Text>
+            </TouchableOpacity>
 
             {/* Botão de Cadastro */}
             <TouchableOpacity
