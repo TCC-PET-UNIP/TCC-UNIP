@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  Image,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -129,15 +128,12 @@ export default function AdotanteQuestions() {
       >
         <View className="flex-1 items-center justify-center px-4">
           <View className="w-full max-w-[400px] bg-[#F8F3EC] rounded-3xl p-8 items-center shadow-lg">
-            {/* Título */}
             <Text className="text-2xl font-bold text-[#ad3434] mb-2 text-center">
               Questionário
             </Text>
             <Text className="text-base text-[#B87B56] mb-6 text-center">
               Conte-nos sobre você e sua casa
             </Text>
-
-            {/* Tipo de imóvel */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Tipo de imóvel:
@@ -150,7 +146,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Localização */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Localização (permissão para pets):
@@ -163,7 +158,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Área externa */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Possui área externa:
@@ -176,7 +170,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Imóvel telado */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Imóvel é telado?
@@ -188,7 +181,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Quantidade de moradores */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Quantidade de moradores:
@@ -202,7 +194,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Há crianças */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Há crianças? (0 a 12 anos)
@@ -213,7 +204,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Há idosos */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">Há idosos?</Text>
               {renderSelector("ha_idosos", [
@@ -222,7 +212,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Outros animais */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Presença de outros animais:
@@ -235,7 +224,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Experiência com animais */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Tem experiência com animais?
@@ -248,7 +236,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Tempo disponível */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Tempo diário disponível:
@@ -261,7 +248,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Tempo fora de casa */}
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Tempo fora de casa (trabalho/estudo):
@@ -274,7 +260,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Necessidades especiais */}
             <View className="w-full mb-6">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Aceita animais com necessidades especiais?
@@ -287,7 +272,6 @@ export default function AdotanteQuestions() {
               ])}
             </View>
 
-            {/* Botão Próximo */}
             <TouchableOpacity
               className={`w-full py-3 rounded-lg ${
                 isFormValid() ? "bg-[#8DC6CE]" : "bg-gray-400"
@@ -304,7 +288,6 @@ export default function AdotanteQuestions() {
         </View>
       </ScrollView>
 
-      {/* Modal de seleção */}
       <Modal
         animationType="slide"
         transparent={true}

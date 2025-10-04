@@ -8,9 +8,11 @@
 frontend/
 ├── 📁 app/                          # Expo Router - Rotas da aplicação
 │   ├── 📄 _layout.tsx              # Layout principal das rotas
+│   ├── 📄 adotante-questions.tsx   # Rota do questionário (/adotante-questions)
 │   ├── 📄 home.tsx                 # Rota principal (/home)
 │   ├── 📄 index.tsx                # Rota inicial (/)
 │   ├── 📄 login.tsx                # Rota de login (/login)
+│   ├── 📄 profile.tsx              # Rota do perfil (/profile)
 │   ├── 📄 register.tsx             # Rota de cadastro (/register)
 │   └── 📁 pet-details/            # Rotas dinâmicas para detalhes
 │       └── 📄 [id].tsx            # Rota dinâmica (/pet-details/[id])
@@ -37,17 +39,20 @@ frontend/
 ├── 📁 components/                  # Componentes reutilizáveis
 │   └── 📄 BottomNavigation.tsx    # Componente de navegação inferior
 │
+├── 📁 utils/                       # Utilitários e helpers
+│   ├── 📄 formatters.ts           # Formatadores de dados (CNPJ, telefone, etc.)
+│   └── 📄 validators.ts           # Validadores de dados (email, CNPJ, etc.)
+│
 ├── 📁 mockData/                    # Dados de simulação/teste
-│   ├── 📄 mockAdotantes.ts        # Dados mockados de adotantes
-│   ├── 📄 mockOngs.ts             # Dados mockados de ONGs
-│   ├── 📄 mockPets.ts             # Dados mockados de pets
-│   └── 📄 mockUsers.ts            # Dados mockados de usuários
+│   └── 📄 mockPets.ts             # Dados mockados de pets
 │
 ├── 📁 Screens/                     # Telas da aplicação
+│   ├── 📄 AdotanteQuestions.tsx   # Questionário pós-cadastro adotante
 │   ├── 📄 Home.tsx                # Tela principal (swipe e lista)
 │   ├── 📄 HomeAuth.tsx            # Tela home para usuários autenticados
 │   ├── 📄 Login.tsx               # Tela de login
 │   ├── 📄 PetDetailsScreen.tsx    # Tela de detalhes do pet
+│   ├── 📄 Profile.tsx             # Tela de perfil do usuário
 │   └── 📄 Register.tsx            # Tela de cadastro
 │
 ├── 📁 services/                    # Serviços e API
@@ -119,10 +124,7 @@ Dados estáticos para desenvolvimento e testes.
 
 #### **Arquivos:**
 
-- **`mockPets.ts`**: Lista de pets com características completas
-- **`mockAdotantes.ts`**: Dados de adotantes simulados
-- **`mockOngs.ts`**: Dados de ONGs simuladas
-- **`mockUsers.ts`**: Usuários para login de teste
+- **`mockPets.ts`**: Lista de pets com características completas e funções auxiliares
 
 ### 📱 **Screens/** - Telas da Aplicação
 
@@ -135,8 +137,10 @@ Todas as telas principais da aplicação.
   - **Modo Lista**: Layout de lista igual às imagens fornecidas
 - **`HomeAuth.tsx`**: Tela de perfil do usuário autenticado
 - **`Login.tsx`**: Tela de login com botão demo
-- **`Register.tsx`**: Tela de cadastro para adotantes e ONGs
-- **`PetDetailsScreen.tsx`**: Detalhes completos do pet
+- **`Register.tsx`**: Tela de cadastro para adotantes e ONGs com botão de preenchimento automático
+- **`PetDetailsScreen.tsx`**: Detalhes completos do pet com galeria de imagens
+- **`AdotanteQuestions.tsx`**: Questionário pós-cadastro para adotantes
+- **`Profile.tsx`**: Tela de edição de perfil completa
 
 ### ⚙️ **services/** - Serviços e Integrações
 
@@ -149,6 +153,22 @@ Lógica de negócio e integrações com APIs.
   - Cadastro de usuários
   - Gerenciamento de sessão
   - Validações
+  - Perfil do usuário
+
+### 🔧 **utils/** - Utilitários e Helpers
+
+Funções auxiliares reutilizáveis em toda a aplicação.
+
+#### **Utilitários:**
+
+- **`formatters.ts`**: Formatação de dados brasileiros
+  - CNPJ, CEP, telefone
+  - Email e formatação de texto
+  - Remoção de formatação
+- **`validators.ts`**: Validação de dados
+  - Email, senhas, CNPJ
+  - CEP, telefone, idade
+  - Validações específicas do Brasil
 
 ### 🎨 **styles/** - Estilos Globais
 
@@ -181,7 +201,9 @@ Interfaces e tipos utilizados em toda a aplicação.
 / (index) → Redireciona conforme autenticação
 ├── /login → Tela de login
 ├── /register → Tela de cadastro
+│   └── /adotante-questions → Questionário pós-cadastro (adotantes)
 ├── /home → Tela principal (autenticada)
+├── /profile → Tela de perfil do usuário
 └── /pet-details/[id] → Detalhes do pet
 ```
 
@@ -189,6 +211,7 @@ Interfaces e tipos utilizados em toda a aplicação.
 
 ```
 mockData → services → Screens → components
+utils (formatters/validators) → Screens
 ```
 
 ### **Gerenciamento de Estado:**
@@ -278,14 +301,19 @@ mockData → services → Screens → components
 
 - [x] Sistema de autenticação completo
 - [x] Tela principal com dois modos (swipe/lista)
-- [x] Detalhes completos dos pets
+- [x] Detalhes completos dos pets com galeria
 - [x] Navegação inferior responsiva
 - [x] Pull-to-refresh
 - [x] Dados mockados realistas
-- [x] Validações robustas
-- [x] Design responsivo
+- [x] Validações robustas com utils
+- [x] Formatadores brasileiros (CNPJ, CEP, telefone)
+- [x] Design responsivo e consistente
 - [x] Estados de loading
 - [x] Tratamento de erros
+- [x] Questionário pós-cadastro para adotantes
+- [x] Tela de perfil completa e editável
+- [x] Modal com fechamento por toque externo
+- [x] Botão de preenchimento automático (desenvolvimento)
 
 ### 🔄 **Próximas Melhorias:**
 
@@ -296,6 +324,7 @@ mockData → services → Screens → components
 - [ ] Notificações push
 - [ ] Mapas das ONGs
 - [ ] Sistema de match avançado
+- [ ] Implementar navegação para telas pendentes (gerenciar pets, notificações, configurações)
 
 ---
 
@@ -321,7 +350,41 @@ mockData → services → Screens → components
 
 ---
 
+## 🧹 **Otimizações Realizadas**
+
+### **Limpeza de Código:**
+
+- ✅ **Remoção de comentários desnecessários**: Eliminados comentários óbvios e redundantes que poluíam o código
+- ✅ **Imports não utilizados**: Removido import `Image` não utilizado do `AdotanteQuestions.tsx`
+- ✅ **Arquivos mock desnecessários**: Removidos `mockUsers.ts`, `mockAdotantes.ts`, `mockOngs.ts` que não estavam sendo utilizados
+- ✅ **Console.log de desenvolvimento**: Substituídos por comentários TODO mais apropriados
+- ✅ **Estrutura de pastas**: Mantida apenas a estrutura necessária e funcional
+
+### **Melhorias de Manutenibilidade:**
+
+- ✅ **Código limpo**: Removidos trechos redundantes mantendo funcionalidade
+- ✅ **Documentação atualizada**: Estrutura de pastas e funcionalidades atualizadas
+- ✅ **Padrões consistentes**: Mantidos padrões de design e código em todo o projeto
+- ✅ **Estabilidade preservada**: Todas as otimizações feitas sem quebrar funcionalidades existentes
+
+### **Estrutura Final Otimizada:**
+
+```
+frontend/
+├── 📁 app/                 # 7 rotas (otimizado)
+├── 📁 assets/              # Recursos estáticos
+├── 📁 components/          # 1 componente reutilizável
+├── 📁 mockData/            # 1 arquivo (otimizado de 4)
+├── 📁 Screens/             # 7 telas principais
+├── 📁 services/            # 1 serviço de autenticação
+├── 📁 styles/              # Estilos globais
+├── 📁 types/               # Tipos TypeScript
+└── 📁 utils/               # Formatadores e validadores
+```
+
+---
+
 **Autor**: Sistema PetHelper  
-**Data**: Setembro 2025  
-**Versão**: 1.0  
+**Data**: Outubro 2025  
+**Versão**: 1.1 (Otimizada)  
 **TCC UNIP**

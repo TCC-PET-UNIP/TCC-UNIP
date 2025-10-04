@@ -35,8 +35,7 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
         <TouchableOpacity
           className="p-2 rounded-xl items-center justify-center"
           onPress={() => {
-            // Implementar tela de gerenciamento de pets
-            console.log("Navegar para gerenciar pets");
+            // TODO: Implementar tela de gerenciamento de pets
           }}
         >
           <Feather
@@ -51,8 +50,7 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
       <TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"
         onPress={() => {
-          // Implementar tela de notificações
-          console.log("Navegar para notificações");
+          // TODO: Implementar tela de notificações
         }}
       >
         <Feather name="bell" size={24} color={getIconColor("notificacoes")} />
@@ -69,8 +67,7 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
       <TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"
         onPress={() => {
-          // Implementar tela de configurações
-          console.log("Navegar para configurações");
+          // TODO: Implementar tela de configurações
         }}
       >
         <Feather

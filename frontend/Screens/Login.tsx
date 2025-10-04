@@ -174,7 +174,6 @@ export default function Login() {
             )}
           </TouchableOpacity>
 
-          {/* Botão de Login Automático para Demo */}
           <TouchableOpacity
             onPress={handleMockLogin}
             disabled={loading}

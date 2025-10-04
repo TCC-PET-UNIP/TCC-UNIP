@@ -113,7 +113,6 @@ export default function PetDetailsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Header com título do pet */}
         <View className="flex-row items-center justify-between pt-16 pb-5 px-5">
           <TouchableOpacity
             onPress={handleVoltar}
@@ -127,7 +126,6 @@ export default function PetDetailsScreen() {
           <View className="w-10" />
         </View>
 
-        {/* Imagem principal */}
         <View className="mx-5 mb-4">
           <View className="h-72 rounded-xl overflow-hidden">
             <Image
