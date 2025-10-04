@@ -16,6 +16,13 @@ import Feather from "@expo/vector-icons/Feather";
 import authService from "../services/authService";
 import { UserProfile } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
+import { isValidEmail, isValidAge, isValidCEP, isValidUF } from "../utils/validators";
+import {
+  formatPhone,
+  formatCEP,
+  formatCNPJ,
+  removeFormatting,
+} from "../utils/formatters";
 
 export default function Profile() {
   const router = useRouter();
@@ -161,30 +168,27 @@ export default function Profile() {
       }
 
       // Validar formato do email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!isValidEmail(email)) {
         Alert.alert("Erro", "Formato de email inválido");
         return;
       }
 
       // Validar idade para adotantes
       if (userProfile.tipo === "ADOTANTE" && idade) {
-        const idadeNum = parseInt(idade);
-        if (isNaN(idadeNum) || idadeNum < 18 || idadeNum > 100) {
+        if (!isValidAge(parseInt(idade))) {
           Alert.alert("Erro", "Idade deve ser um número entre 18 e 100 anos");
           return;
         }
       }
 
       // Validar CEP
-      const cepClean = cep.replace(/\D/g, "");
-      if (cepClean.length !== 8) {
+      if (!isValidCEP(cep)) {
         Alert.alert("Erro", "CEP deve ter 8 dígitos");
         return;
       }
 
       // Validar UF
-      if (uf.length !== 2) {
+      if (!isValidUF(uf)) {
         Alert.alert("Erro", "UF deve ter 2 caracteres");
         return;
       }
@@ -200,7 +204,7 @@ export default function Profile() {
           userProfile.tipo === "ADOTANTE" && idade
             ? parseInt(idade)
             : undefined,
-        telefone: formatTelefone(telefone),
+        telefone: formatPhone(telefone),
         endereco: {
           ...userProfile.endereco,
           logradouro: logradouro.trim(),
@@ -208,7 +212,7 @@ export default function Profile() {
           bairro: bairro.trim(),
           cidade: cidade.trim(),
           uf: uf.toUpperCase().trim(),
-          cep: formatCEP(cep),
+          cep: formatCEP(removeFormatting(cep)),
         },
       };
 
@@ -234,64 +238,45 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const formatTelefone = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
-    if (cleaned.length === 11) {
-      return cleaned.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
-    } else if (cleaned.length === 10) {
-      return cleaned.replace(/^(\d{2})(\d{4})(\d{4})$/, "($1) $2-$3");
-    }
-    return text;
-  };
-
-  const formatCEP = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
-    return cleaned.replace(/^(\d{5})(\d{3})$/, "$1-$2");
-  };
-
-  const formatCNPJ = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
-    return cleaned.replace(
-      /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-      "$1.$2.$3/$4-$5"
-    );
-  };
-
   const handleTelefoneChange = (text: string) => {
-    setTelefone(formatTelefone(text));
+    setTelefone(formatPhone(text));
   };
 
   const handleCEPChange = (text: string) => {
-    setCep(formatCEP(text));
+    const cleaned = removeFormatting(text);
+    if (cleaned.length <= 8) {
+      setCep(cleaned.length === 8 ? formatCEP(cleaned) : cleaned);
+    }
   };
 
   const handleCNPJChange = (text: string) => {
-    setCnpj(formatCNPJ(text));
+    const cleaned = removeFormatting(text);
+    if (cleaned.length <= 14) {
+      setCnpj(cleaned.length === 14 ? formatCNPJ(cleaned) : cleaned);
+    }
   };
 
   if (loading) {
     return (
-      <View className="flex-1 bg-orange-50 justify-center items-center">
+      <View className="loading-container">
         <ActivityIndicator size="large" color="#B87B56" />
-        <Text className="text-amber-700 mt-4 text-lg">
-          Carregando perfil...
-        </Text>
+        <Text className="loading-text">Carregando perfil...</Text>
       </View>
     );
   }
 
   if (!userProfile) {
     return (
-      <View className="flex-1 bg-orange-50 justify-center items-center">
+      <View className="loading-container">
         <Feather name="user-x" size={48} color="#B87B56" />
-        <Text className="text-amber-700 mt-4 text-lg">
-          Erro ao carregar perfil
-        </Text>
+        <Text className="loading-text">Erro ao carregar perfil</Text>
         <TouchableOpacity
           className="bg-cyan-300 px-6 py-3 rounded-xl mt-4"
           onPress={loadUserProfile}
         >
-          <Text className="text-amber-700 font-semibold">Tentar novamente</Text>
+          <Text className="text-pethelper-primary font-semibold">
+            Tentar novamente
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -299,7 +284,7 @@ export default function Profile() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-orange-50"
+      className="container-pethelper"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -310,7 +295,7 @@ export default function Profile() {
               <Text className="text-2xl font-bold text-red-800 mb-1">
                 Meu Perfil
               </Text>
-              <Text className="text-amber-700">
+              <Text className="text-pethelper-primary">
                 {userProfile.tipo === "ADOTANTE" ? "Adotante" : "ONG"}
               </Text>
             </View>
@@ -338,7 +323,7 @@ export default function Profile() {
                 </>
               ) : (
                 <TouchableOpacity
-                  className="bg-cyan-300 p-3 rounded-xl"
+                  className="bg-amber p-3 rounded-xl"
                   onPress={() => setIsEditing(true)}
                 >
                   <Feather name="edit-3" size={20} color="#B87B56" />
@@ -351,7 +336,7 @@ export default function Profile() {
         <View className="px-6 pb-24">
           {/* Foto de Perfil - Apenas para ONGs */}
           {userProfile.tipo === "ONG" && (
-            <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
+            <View className="bg-pethelper-card rounded-pethelper spacing-pethelper margin-pethelper shadow-pethelper">
               <Text className="text-lg font-semibold text-red-800 mb-4">
                 Foto de Perfil
               </Text>
@@ -405,7 +390,9 @@ export default function Profile() {
 
             {/* Email */}
             <View className="mb-4">
-              <Text className="text-amber-700 font-medium mb-2">Email</Text>
+              <Text className="text-pethelper-primary font-medium mb-2">
+                Email
+              </Text>
               <TextInput
                 className={`border-2 ${
                   isEditing ? "border-cyan-300" : "border-gray-200"
@@ -665,8 +652,6 @@ export default function Profile() {
                 </View>
               </View>
             )}
-
-           
           </View>
         </View>
       </ScrollView>

@@ -121,3 +121,35 @@ export const isValidName = (name: string): boolean => {
   const nameRegex = /^[a-zA-ZÀ-ÿ\s]{2,}$/;
   return nameRegex.test(name.trim());
 };
+
+/**
+ * Valida UF brasileira (2 caracteres)
+ * @param uf - String com UF
+ * @returns boolean
+ */
+export const isValidUF = (uf: string): boolean => {
+  return uf.trim().length === 2;
+};
+
+/**
+ * Valida se todos os campos obrigatórios do endereço estão preenchidos
+ * @param endereco - Objeto com dados do endereço
+ * @returns boolean
+ */
+export const isValidAddress = (endereco: {
+  logradouro?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  uf?: string;
+  cep?: string;
+}): boolean => {
+  return !!(
+    endereco.logradouro &&
+    endereco.numero &&
+    endereco.bairro &&
+    endereco.cidade &&
+    endereco.uf &&
+    endereco.cep
+  );
+};

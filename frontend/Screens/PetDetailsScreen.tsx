@@ -18,6 +18,7 @@ import {
 import { Pet } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
 import authService from "../services/authService";
+import { removeFormatting } from "../utils/formatters";
 
 export default function PetDetailsScreen() {
   const router = useRouter();
@@ -62,7 +63,7 @@ export default function PetDetailsScreen() {
           text: "Ligar para ONG",
           onPress: () => {
             if (pet.ong_telefone) {
-              Linking.openURL(`tel:${pet.ong_telefone.replace(/\D/g, "")}`);
+              Linking.openURL(`tel:${removeFormatting(pet.ong_telefone)}`);
             }
           },
         },
@@ -70,7 +71,7 @@ export default function PetDetailsScreen() {
           text: "WhatsApp",
           onPress: () => {
             if (pet.ong_telefone) {
-              const phoneNumber = pet.ong_telefone.replace(/\D/g, "");
+              const phoneNumber = removeFormatting(pet.ong_telefone);
               const message = `Olá! Gostaria de agendar uma visita para conhecer ${pet.nome}.`;
               Linking.openURL(
                 `whatsapp://send?phone=55${phoneNumber}&text=${encodeURIComponent(message)}`

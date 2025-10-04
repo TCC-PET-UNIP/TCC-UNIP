@@ -247,7 +247,7 @@ export default function Register() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#B87B56]"
+      className="register-container"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
@@ -257,7 +257,7 @@ export default function Register() {
       >
         <View className="flex-1 items-center justify-center px-4">
           <View className="w-full max-w-[400px] bg-[#F8F3EC] rounded-3xl p-8 items-center shadow-lg">
-            <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-20 mb-4 overflow-hidden border-4 border-[#B87B56]">
+            <View className="register-avatar">
               <Image
                 source={require("@/assets/images/Dog_Login.png")}
                 className="w-28 h-28"
@@ -467,7 +467,7 @@ export default function Register() {
               onPress={fillTestData}
               className="w-full bg-yellow-500 rounded-lg py-2 mb-3"
             >
-              <Text className="text-white text-center font-bold text-sm">
+              <Text className="btn-pethelper-text text-center text-sm">
                 🚧 PREENCHER DADOS DE TESTE 🚧
               </Text>
             </TouchableOpacity>
@@ -482,12 +482,12 @@ export default function Register() {
               {loading ? (
                 <View className="flex-row items-center justify-center">
                   <ActivityIndicator color="#fff" />
-                  <Text className="text-white text-center font-bold text-base ml-2">
+                  <Text className="btn-pethelper-text text-center ml-2">
                     CADASTRANDO...
                   </Text>
                 </View>
               ) : (
-                <Text className="text-white text-center font-bold text-base">
+                <Text className="btn-pethelper-text text-center">
                   CADASTRAR
                 </Text>
               )}

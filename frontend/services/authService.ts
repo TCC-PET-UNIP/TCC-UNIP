@@ -6,6 +6,16 @@ import {
   RegisterONGRequest,
   UserProfile,
 } from "../types/types";
+import {
+  isValidEmail,
+  isValidPassword,
+  isValidCNPJ,
+  isValidCEP,
+  isValidPhone,
+  isValidUF,
+  isValidAddress,
+  isNotEmpty,
+} from "../utils/validators";
 
 const API_BASE_URL = "http://localhost:8000/api"; // Ajuste conforme necessário
 
@@ -24,15 +34,14 @@ class AuthService {
         };
       }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(credentials.email)) {
+      if (!isValidEmail(credentials.email)) {
         return {
           success: false,
           message: "Email inválido",
         };
       }
 
-      if (credentials.senha.length < 6) {
+      if (!isValidPassword(credentials.senha)) {
         return {
           success: false,
           message: "Senha deve ter pelo menos 6 caracteres",
@@ -147,7 +156,7 @@ class AuthService {
       }
 
       // Validar CNPJ
-      if (!this.isValidCNPJ(data.cnpj)) {
+      if (!isValidCNPJ(data.cnpj)) {
         return {
           success: false,
           message: "CNPJ inválido",
@@ -247,53 +256,39 @@ class AuthService {
       };
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.conta.email)) {
+    if (!isValidEmail(data.conta.email)) {
       return { isValid: false, message: "Email inválido" };
     }
 
-    if (data.conta.senha.length < 6) {
+    if (!isValidPassword(data.conta.senha)) {
       return {
         isValid: false,
         message: "Senha deve ter pelo menos 6 caracteres",
       };
     }
 
-    if (!data.telefone || data.telefone.length < 10) {
+    if (!isValidPhone(data.telefone)) {
       return { isValid: false, message: "Telefone inválido" };
     }
 
     // Validar endereço
     const { endereco } = data;
-    if (
-      !endereco.logradouro ||
-      !endereco.numero ||
-      !endereco.bairro ||
-      !endereco.cidade ||
-      !endereco.uf ||
-      !endereco.cep
-    ) {
+    if (!isValidAddress(endereco)) {
       return {
         isValid: false,
         message: "Todos os campos do endereço são obrigatórios",
       };
     }
 
-    if (endereco.uf.length !== 2) {
+    if (!isValidUF(endereco.uf)) {
       return { isValid: false, message: "UF deve ter 2 caracteres" };
     }
 
-    if (endereco.cep.replace(/\D/g, "").length !== 8) {
+    if (!isValidCEP(endereco.cep)) {
       return { isValid: false, message: "CEP inválido" };
     }
 
     return { isValid: true, message: "" };
-  }
-
-  // Validar CNPJ (básico)
-  private isValidCNPJ(cnpj: string): boolean {
-    const cleanCNPJ = cnpj.replace(/\D/g, "");
-    return cleanCNPJ.length === 14;
   }
 
   // Gerar UUID simples para simulação

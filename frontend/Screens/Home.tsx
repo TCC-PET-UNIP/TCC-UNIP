@@ -65,27 +65,27 @@ export default function Home() {
 
   if (!userProfile) {
     return (
-      <View className="flex-1 justify-center items-center bg-orange-50">
-        <Text className="text-lg text-amber-700">Carregando...</Text>
+      <View className="loading-container">
+        <Text className="loading-text">Carregando...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-orange-50">
+    <View className="container-pethelper">
       {/* Header */}
-      <View className="flex-row justify-between items-center pt-10 pb-5 px-5 bg-orange-50">
-        <Text className="text-xl font-bold text-gray-800 flex-1">
+      <View className="header-pethelper">
+        <Text className="text-xl font-bold text-pethelper-dark flex-1">
           Pets pra você
         </Text>
-        <TouchableOpacity className="p-2 rounded-lg" onPress={goToLogin}>
+        <TouchableOpacity className="btn-pethelper-logout" onPress={goToLogin}>
           <Feather name="log-out" size={20} color="#ad3434" />
         </TouchableOpacity>
       </View>
 
       {/* Content */}
       <ScrollView
-        className="flex-1 w-full"
+        className="content-pethelper"
         contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
         refreshControl={
           <RefreshControl
@@ -103,31 +103,24 @@ export default function Home() {
           );
 
           return (
-            <View
-              key={pet.id}
-              className="bg-amber-700 rounded-2xl mb-5 p-4 shadow-lg"
-            >
-              <View className="rounded-2xl overflow-hidden mb-4 h-72">
+            <View key={pet.id} className="pet-card">
+              <View className="pet-image-container">
                 <Image
                   source={pet.foto}
-                  className="w-full h-full"
+                  className="pet-image"
                   resizeMode="cover"
                 />
               </View>
 
               <View className="flex-1">
-                <Text className="text-3xl font-bold text-white mb-3">
-                  {pet.nome}
-                </Text>
+                <Text className="pet-title">{pet.nome}</Text>
 
-                <View className="mb-5">
-                  <Text className="text-lg font-bold text-white mb-2">
-                    Características
-                  </Text>
-                  <View className="gap-1">
+                <View className="characteristics-container">
+                  <Text className="pet-section-title">Características</Text>
+                  <View className="characteristics-list">
                     {caracteristicas.map((caracteristica, index) => (
-                      <View key={index} className="mb-1">
-                        <Text className="text-base text-white leading-6">
+                      <View key={index} className="characteristic-item">
+                        <Text className="pet-characteristic">
                           • {caracteristica}
                         </Text>
                       </View>
@@ -136,12 +129,10 @@ export default function Home() {
                 </View>
 
                 <TouchableOpacity
-                  className="bg-teal-400 py-4 px-6 rounded-xl items-center mt-1"
+                  className="btn-pethelper-primary mt-1"
                   onPress={() => handleVerMais(pet.id)}
                 >
-                  <Text className="text-white text-base font-bold">
-                    Ver Mais
-                  </Text>
+                  <Text className="btn-pethelper-text">Ver Mais</Text>
                 </TouchableOpacity>
               </View>
             </View>
