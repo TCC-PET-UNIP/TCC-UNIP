@@ -66,15 +66,9 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
       {/* Configurações */}
       <TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"
-        onPress={() => {
-          // TODO: Implementar tela de configurações
-        }}
+        onPress={() => router.push("/settings" as any)}
       >
-        <Feather
-          name="settings"
-          size={24}
-          color={getIconColor("configuracoes")}
-        />
+        <Feather name="settings" size={24} color={getIconColor("settings")} />
       </TouchableOpacity>
     </View>
   );
