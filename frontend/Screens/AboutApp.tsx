@@ -15,7 +15,7 @@ export default function AboutApp() {
 
   const developers = [
     {
-      name: "Ana Paula Santos",
+      name: "Diego Ramos dos Santos",
       role: "Full Stack Developer",
       icon: "code",
     },
