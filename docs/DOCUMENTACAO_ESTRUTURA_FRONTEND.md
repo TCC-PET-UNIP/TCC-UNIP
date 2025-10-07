@@ -442,6 +442,7 @@ frontend/
 #### **Novas Funcionalidades:**
 
 1. **Tela de Configurações (Settings.tsx)**
+
    - Implementação de tela simplificada e funcional
    - Logout com confirmação e limpeza de dados
    - Navegação para edição de perfil
@@ -449,6 +450,7 @@ frontend/
    - Design consistente com o restante do app
 
 2. **Tela Sobre o App (AboutApp.tsx)**
+
    - Lista de desenvolvedores do projeto
    - 5 membros da equipe com funções específicas
    - Link funcional para repositório GitHub
