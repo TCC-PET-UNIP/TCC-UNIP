@@ -8,12 +8,14 @@
 frontend/
 ├── 📁 app/                          # Expo Router - Rotas da aplicação
 │   ├── 📄 _layout.tsx              # Layout principal das rotas
+│   ├── 📄 about-app.tsx            # Rota "Sobre o App" (/about-app)
 │   ├── 📄 adotante-questions.tsx   # Rota do questionário (/adotante-questions)
 │   ├── 📄 home.tsx                 # Rota principal (/home)
 │   ├── 📄 index.tsx                # Rota inicial (/)
 │   ├── 📄 login.tsx                # Rota de login (/login)
 │   ├── 📄 profile.tsx              # Rota do perfil (/profile)
 │   ├── 📄 register.tsx             # Rota de cadastro (/register)
+│   ├── 📄 settings.tsx             # Rota de configurações (/settings)
 │   └── 📁 pet-details/            # Rotas dinâmicas para detalhes
 │       └── 📄 [id].tsx            # Rota dinâmica (/pet-details/[id])
 │
@@ -47,13 +49,15 @@ frontend/
 │   └── 📄 mockPets.ts             # Dados mockados de pets
 │
 ├── 📁 Screens/                     # Telas da aplicação
+│   ├── 📄 AboutApp.tsx            # Tela "Sobre o App" com desenvolvedores
 │   ├── 📄 AdotanteQuestions.tsx   # Questionário pós-cadastro adotante
 │   ├── 📄 Home.tsx                # Tela principal (swipe e lista)
 │   ├── 📄 HomeAuth.tsx            # Tela home para usuários autenticados
 │   ├── 📄 Login.tsx               # Tela de login
 │   ├── 📄 PetDetailsScreen.tsx    # Tela de detalhes do pet
 │   ├── 📄 Profile.tsx             # Tela de perfil do usuário
-│   └── 📄 Register.tsx            # Tela de cadastro
+│   ├── 📄 Register.tsx            # Tela de cadastro
+│   └── 📄 Settings.tsx            # Tela de configurações
 │
 ├── 📁 services/                    # Serviços e API
 │   └── 📄 authService.ts          # Serviço de autenticação
@@ -90,6 +94,10 @@ Gerencia toda a navegação da aplicação usando o padrão file-based routing.
 - **`home.tsx`**: Tela principal (/home) com pets
 - **`login.tsx`**: Tela de autenticação (/login)
 - **`register.tsx`**: Tela de cadastro (/register)
+- **`profile.tsx`**: Tela de perfil do usuário (/profile)
+- **`settings.tsx`**: Tela de configurações (/settings)
+- **`about-app.tsx`**: Tela "Sobre o App" (/about-app)
+- **`adotante-questions.tsx`**: Questionário pós-cadastro (/adotante-questions)
 
 #### **Subpastas:**
 
@@ -114,9 +122,11 @@ Componentes que podem ser usados em múltiplas telas.
 #### **Componentes Atuais:**
 
 - **`BottomNavigation.tsx`**: Barra de navegação inferior
-  - Ícones diferentes por tipo de usuário
-  - Navegação entre seções principais
+  - Ícones diferentes por tipo de usuário (ADOTANTE/ONG)
+  - Navegação entre seções principais (Home, Perfil, Configurações)
   - Estado ativo baseado na rota atual
+  - Navegação funcional para todas as telas implementadas
+  - Suporte para rotas futuras (gerenciamento de pets, notificações)
 
 ### 📊 **mockData/** - Dados de Simulação
 
@@ -141,6 +151,16 @@ Todas as telas principais da aplicação.
 - **`PetDetailsScreen.tsx`**: Detalhes completos do pet com galeria de imagens
 - **`AdotanteQuestions.tsx`**: Questionário pós-cadastro para adotantes
 - **`Profile.tsx`**: Tela de edição de perfil completa
+- **`Settings.tsx`**: Tela de configurações simplificada
+  - Editar perfil (redirecionamento)
+  - Sair da conta (logout com confirmação)
+  - Limpar cache
+  - Sobre o App (navegação para AboutApp)
+- **`AboutApp.tsx`**: Tela "Sobre o App"
+  - Lista de desenvolvedores do projeto (5 membros fictícios)
+  - Link para o repositório GitHub
+  - Informações do app e copyright
+  - Navegação de volta para Settings
 
 ### ⚙️ **services/** - Serviços e Integrações
 
@@ -204,6 +224,8 @@ Interfaces e tipos utilizados em toda a aplicação.
 │   └── /adotante-questions → Questionário pós-cadastro (adotantes)
 ├── /home → Tela principal (autenticada)
 ├── /profile → Tela de perfil do usuário
+├── /settings → Tela de configurações
+│   └── /about-app → Tela "Sobre o App"
 └── /pet-details/[id] → Detalhes do pet
 ```
 
@@ -265,6 +287,27 @@ utils (formatters/validators) → Screens
 - ✅ **Navegação contextual**: Diferente por tipo de usuário
 - ✅ **Estado ativo**: Ícone destacado na rota atual
 - ✅ **Design consistente**: Cores e espaçamento harmonioso
+- ✅ **Navegação funcional**: Home, Perfil, Configurações implementadas
+- ✅ **Rotas preparadas**: Suporte para futuras implementações (gerenciar pets, notificações)
+
+### **⚙️ Settings.tsx**
+
+- ✅ **Interface simplificada**: Foco em funcionalidades essenciais
+- ✅ **Logout seguro**: Confirmação antes de sair e limpeza de AsyncStorage
+- ✅ **Navegação integrada**: Redirecionamento para Profile e AboutApp
+- ✅ **Gerenciamento de cache**: Opção de limpar dados temporários
+- ✅ **Estados de loading**: Feedback visual durante carregamento
+- ✅ **Verificação de autenticação**: Redireciona para login se não autenticado
+
+### **ℹ️ AboutApp.tsx**
+
+- ✅ **Equipe de desenvolvimento**: Lista com 5 desenvolvedores fictícios
+- ✅ **Ícones personalizados**: Cada membro com ícone representando sua função
+- ✅ **Link para GitHub**: Botão funcional com Linking API
+- ✅ **Validação de URL**: Verifica se o link pode ser aberto antes de tentar
+- ✅ **Tratamento de erros**: Alertas informativos em caso de falha
+- ✅ **Navegação de volta**: Botão de retorno para Settings
+- ✅ **Design profissional**: Card com informações do app e copyright
 
 ---
 
@@ -314,6 +357,11 @@ utils (formatters/validators) → Screens
 - [x] Tela de perfil completa e editável
 - [x] Modal com fechamento por toque externo
 - [x] Botão de preenchimento automático (desenvolvimento)
+- [x] Tela de configurações com logout funcional
+- [x] Tela "Sobre o App" com equipe de desenvolvimento
+- [x] Link funcional para repositório GitHub
+- [x] Navegação completa entre todas as telas implementadas
+- [x] Bottom navigation com rotas funcionais
 
 ### 🔄 **Próximas Melhorias:**
 
@@ -324,7 +372,10 @@ utils (formatters/validators) → Screens
 - [ ] Notificações push
 - [ ] Mapas das ONGs
 - [ ] Sistema de match avançado
-- [ ] Implementar navegação para telas pendentes (gerenciar pets, notificações, configurações)
+- [ ] Implementar navegação para telas pendentes (gerenciar pets, notificações)
+- [ ] Implementar galeria de imagens no perfil
+- [ ] Sistema de avaliação de ONGs
+- [ ] Histórico de adoções
 
 ---
 
@@ -371,11 +422,11 @@ utils (formatters/validators) → Screens
 
 ```
 frontend/
-├── 📁 app/                 # 7 rotas (otimizado)
+├── 📁 app/                 # 10 rotas (2 novas: settings, about-app)
 ├── 📁 assets/              # Recursos estáticos
-├── 📁 components/          # 1 componente reutilizável
+├── 📁 components/          # 1 componente reutilizável (atualizado)
 ├── 📁 mockData/            # 1 arquivo (otimizado de 4)
-├── 📁 Screens/             # 7 telas principais
+├── 📁 Screens/             # 9 telas principais (2 novas: Settings, AboutApp)
 ├── 📁 services/            # 1 serviço de autenticação
 ├── 📁 styles/              # Estilos globais
 ├── 📁 types/               # Tipos TypeScript
@@ -384,7 +435,49 @@ frontend/
 
 ---
 
+## 🆕 **Atualizações Recentes**
+
+### **v1.2 - Outubro 2025**
+
+#### **Novas Funcionalidades:**
+
+1. **Tela de Configurações (Settings.tsx)**
+   - Implementação de tela simplificada e funcional
+   - Logout com confirmação e limpeza de dados
+   - Navegação para edição de perfil
+   - Opção de limpar cache
+   - Design consistente com o restante do app
+
+2. **Tela Sobre o App (AboutApp.tsx)**
+   - Lista de desenvolvedores do projeto
+   - 5 membros da equipe com funções específicas
+   - Link funcional para repositório GitHub
+   - Informações de versão e copyright
+   - Tratamento de erros ao abrir links externos
+
+3. **Navegação Atualizada**
+   - BottomNavigation agora navega para Settings
+   - Rotas criadas para /settings e /about-app
+   - Navegação hierárquica: Settings → AboutApp
+
+#### **Melhorias de Design:**
+
+- Paleta de cores consistente em todas as telas
+- Ícones Feather utilizados uniformemente
+- Cards com sombras e bordas arredondadas
+- Estados de loading e feedback visual
+- Alertas com confirmação para ações importantes
+
+#### **Código Limpo:**
+
+- Remoção de seções não utilizadas (notificações, políticas)
+- Componentes simplificados mantendo funcionalidade
+- TypeScript com tipagem completa
+- Estrutura de pastas otimizada
+
+---
+
 **Autor**: Sistema PetHelper  
 **Data**: Outubro 2025  
-**Versão**: 1.1 (Otimizada)  
+**Versão**: 1.2 (Configurações e Sobre)  
 **TCC UNIP**
