@@ -83,7 +83,7 @@ export default function Login() {
     try {
       // Dados de usuário mockado para teste
       const mockLoginData: LoginRequest = {
-        email: "teste@pethelper.com",
+        email: "teste@petlar.com",
         senha: "123456",
       };
 
@@ -121,8 +121,8 @@ export default function Login() {
             />
           </View>
 
-          <Text className="text-2xl font-bold text-[#ad3434] mb-6 mt-2">
-            PetHelper
+          <Text className="text-3xl font-bold text-[#ad3434] mb-6 mt-2">
+            PetLar
           </Text>
 
           <TextInput
@@ -205,7 +205,7 @@ export default function Login() {
           <Link href="/register" asChild>
             <TouchableOpacity>
               <Text className="text-[#B87B56] font-bold underline text-center">
-                Ainda não tem conta? Cadastre-se
+                Ainda não tem uma conta? Cadastre-se aqui
               </Text>
             </TouchableOpacity>
           </Link>

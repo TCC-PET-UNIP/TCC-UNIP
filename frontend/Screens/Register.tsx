@@ -257,16 +257,8 @@ export default function Register() {
       >
         <View className="flex-1 items-center justify-center px-4">
           <View className="w-full max-w-[400px] bg-[#F8F3EC] rounded-3xl p-8 items-center shadow-lg">
-            <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-20 mb-4 overflow-hidden border-4 border-[#B87B56]">
-              <Image
-                source={require("@/assets/images/Dog_Login.png")}
-                className="w-28 h-28"
-                resizeMode="contain"
-              />
-            </View>
-
             <Text className="text-2xl font-bold text-[#ad3434] mb-6">
-              Cadastro - PetHelper
+              Cadastro - PetLar
             </Text>
 
             {/* Seletor de tipo de usuário */}
@@ -495,7 +487,7 @@ export default function Register() {
 
             <TouchableOpacity onPress={() => router.push("/login")}>
               <Text className="text-[#B87B56] font-bold underline text-center">
-                Já tem conta? Entrar
+                Já tem uma conta? Entre aqui
               </Text>
             </TouchableOpacity>
           </View>
