@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
+import * as ImagePicker from "expo-image-picker";
 import authService from "../services/authService";
 import { UserProfile } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
@@ -68,24 +69,66 @@ export default function AddPet() {
       },
       {
         text: "Câmera",
-        onPress: () => {
-          // Por enquanto, usar uma imagem padrão como demonstração
-          setFoto(require("@/assets/images/Dog_Login.png"));
-          Alert.alert(
-            "Info",
-            "Funcionalidade de câmera será implementada em versões futuras. Usando imagem de demonstração."
-          );
+        onPress: async () => {
+          try {
+            // Solicitar permissão da câmera
+            const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            
+            if (!permissionResult.granted) {
+              Alert.alert(
+                "Permissão Negada",
+                "É necessário permitir acesso à câmera para tirar fotos."
+              );
+              return;
+            }
+
+            // Abrir câmera
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets && result.assets[0]) {
+              setFoto({ uri: result.assets[0].uri });
+            }
+          } catch (error) {
+            console.error("Erro ao abrir câmera:", error);
+            Alert.alert("Erro", "Não foi possível abrir a câmera.");
+          }
         },
       },
       {
         text: "Galeria",
-        onPress: () => {
-          // Por enquanto, usar uma imagem padrão como demonstração
-          setFoto(require("@/assets/images/Dog_Login.png"));
-          Alert.alert(
-            "Info",
-            "Funcionalidade de galeria será implementada em versões futuras. Usando imagem de demonstração."
-          );
+        onPress: async () => {
+          try {
+            // Solicitar permissão da galeria
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            
+            if (!permissionResult.granted) {
+              Alert.alert(
+                "Permissão Negada",
+                "É necessário permitir acesso à galeria para escolher fotos."
+              );
+              return;
+            }
+
+            // Abrir galeria
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets && result.assets[0]) {
+              setFoto({ uri: result.assets[0].uri });
+            }
+          } catch (error) {
+            console.error("Erro ao abrir galeria:", error);
+            Alert.alert("Erro", "Não foi possível abrir a galeria.");
+          }
         },
       },
     ]);
