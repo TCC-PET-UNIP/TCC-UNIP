@@ -75,7 +75,7 @@ export default function Login() {
     }
   };
 
-  const handleMockLogin = async () => {
+  const handleMockLogin = async (userType: "ADOTANTE" | "ONG") => {
     if (loading) return;
 
     setLoading(true);
@@ -83,7 +83,7 @@ export default function Login() {
     try {
       // Dados de usuário mockado para teste
       const mockLoginData: LoginRequest = {
-        email: "teste@petlar.com",
+        email: userType === "ONG" ? "ong@petlar.com" : "teste@petlar.com",
         senha: "123456",
       };
 
@@ -112,7 +112,7 @@ export default function Login() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View className="flex-1 items-center justify-center px-4">
-        <View className="w-full min-h-[390px] max-w-[380px] bg-[#F8F3EC] rounded-3xl p-10 items-center shadow-lg">
+        <View className="w-full min-h-[450px] max-w-[380px] bg-[#F8F3EC] rounded-3xl p-10 items-center shadow-lg">
           <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-20 mb-2 overflow-hidden border-4 border-[#B87B56]">
             <Image
               source={require("@/assets/images/Dog_Login.png")}
@@ -175,9 +175,9 @@ export default function Login() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={handleMockLogin}
+            onPress={() => handleMockLogin("ADOTANTE")}
             disabled={loading}
-            className="w-full bg-[#ad3434] rounded-lg py-3 mb-4"
+            className="w-full bg-[#ad3434] rounded-lg py-3 mb-2"
             style={{ opacity: loading ? 0.7 : 1 }}
           >
             {loading ? (
@@ -190,13 +190,41 @@ export default function Login() {
             ) : (
               <View className="flex-row items-center justify-center">
                 <Feather
-                  name="zap"
+                  name="user"
                   size={16}
                   color="#fff"
                   style={{ marginRight: 8 }}
                 />
                 <Text className="text-white text-center font-bold text-base">
-                  DEMO LOGIN
+                  DEMO - ADOTANTE
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => handleMockLogin("ONG")}
+            disabled={loading}
+            className="w-full bg-[#B87B56] rounded-lg py-3 mb-4"
+            style={{ opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? (
+              <View className="flex-row items-center justify-center">
+                <ActivityIndicator color="#fff" />
+                <Text className="text-white text-center font-bold text-base ml-2">
+                  ENTRANDO...
+                </Text>
+              </View>
+            ) : (
+              <View className="flex-row items-center justify-center">
+                <Feather
+                  name="briefcase"
+                  size={16}
+                  color="#fff"
+                  style={{ marginRight: 8 }}
+                />
+                <Text className="text-white text-center font-bold text-base">
+                  DEMO - ONG
                 </Text>
               </View>
             )}

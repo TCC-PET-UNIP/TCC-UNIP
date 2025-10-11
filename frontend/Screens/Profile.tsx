@@ -648,13 +648,6 @@ export default function Profile() {
                     </Text>
                   </View>
                 </View>
-
-                <View className="items-center bg-cyan-50 rounded-xl p-3 mt-2">
-                  <Text className="text-2xl font-bold text-cyan-600">4.5★</Text>
-                  <Text className="text-amber-700 text-sm">
-                    Avaliação Média
-                  </Text>
-                </View>
               </View>
             )}
           </View>

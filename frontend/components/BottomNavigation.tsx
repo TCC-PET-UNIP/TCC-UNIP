@@ -34,14 +34,12 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
       {userType === "ONG" && (
         <TouchableOpacity
           className="p-2 rounded-xl items-center justify-center"
-          onPress={() => {
-            // TODO: Implementar tela de gerenciamento de pets
-          }}
+          onPress={() => router.push("/manage-pets")}
         >
           <Feather
             name="clipboard"
             size={24}
-            color={getIconColor("gerenciar")}
+            color={getIconColor("manage-pets")}
           />
         </TouchableOpacity>
       )}
