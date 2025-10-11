@@ -72,8 +72,9 @@ export default function AddPet() {
         onPress: async () => {
           try {
             // Solicitar permissão da câmera
-            const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-            
+            const permissionResult =
+              await ImagePicker.requestCameraPermissionsAsync();
+
             if (!permissionResult.granted) {
               Alert.alert(
                 "Permissão Negada",
@@ -84,7 +85,7 @@ export default function AddPet() {
 
             // Abrir câmera
             const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ['images'],
+              mediaTypes: ["images"],
               allowsEditing: true,
               aspect: [1, 1],
               quality: 0.8,
@@ -104,8 +105,9 @@ export default function AddPet() {
         onPress: async () => {
           try {
             // Solicitar permissão da galeria
-            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            
+            const permissionResult =
+              await ImagePicker.requestMediaLibraryPermissionsAsync();
+
             if (!permissionResult.granted) {
               Alert.alert(
                 "Permissão Negada",
@@ -116,7 +118,7 @@ export default function AddPet() {
 
             // Abrir galeria
             const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ['images'],
+              mediaTypes: ["images"],
               allowsEditing: true,
               aspect: [1, 1],
               quality: 0.8,
