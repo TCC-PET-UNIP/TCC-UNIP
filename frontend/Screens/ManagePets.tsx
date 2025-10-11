@@ -26,7 +26,7 @@ export default function ManagePets() {
   const [refreshing, setRefreshing] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [pets, setPets] = useState<Pet[]>([]);
-  
+
   // Estados do modal de edição
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
@@ -72,7 +72,7 @@ export default function ManagePets() {
   const loadPets = async () => {
     try {
       setLoading(true);
-      
+
       // Simular delay de rede
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -257,25 +257,21 @@ export default function ManagePets() {
   };
 
   const handleDeletePet = (petId: number, petName: string) => {
-    Alert.alert(
-      "Remover Pet",
-      `Tem certeza que deseja remover ${petName}?`,
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
+    Alert.alert("Remover Pet", `Tem certeza que deseja remover ${petName}?`, [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Remover",
+        style: "destructive",
+        onPress: async () => {
+          // Simular remoção
+          setPets(pets.filter((pet) => pet.id !== petId));
+          Alert.alert("Sucesso", `${petName} foi removido da lista.`);
         },
-        {
-          text: "Remover",
-          style: "destructive",
-          onPress: async () => {
-            // Simular remoção
-            setPets(pets.filter((pet) => pet.id !== petId));
-            Alert.alert("Sucesso", `${petName} foi removido da lista.`);
-          },
-        },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleViewDetails = (petId: number) => {
@@ -299,7 +295,8 @@ export default function ManagePets() {
           <View className="flex-1">
             <Text className="text-2xl font-bold text-white">Meus Pets</Text>
             <Text className="text-orange-100 mt-1">
-              {pets.length} {pets.length === 1 ? "pet cadastrado" : "pets cadastrados"}
+              {pets.length}{" "}
+              {pets.length === 1 ? "pet cadastrado" : "pets cadastrados"}
             </Text>
           </View>
           <TouchableOpacity
@@ -422,19 +419,19 @@ export default function ManagePets() {
                         {pet.idade} {pet.idade === 1 ? "ano" : "anos"}
                       </Text>
                       <Text className="text-amber-500 mx-2">•</Text>
-                      <Text className="text-amber-700 text-sm">
-                        {pet.sexo}
-                      </Text>
+                      <Text className="text-amber-700 text-sm">{pet.sexo}</Text>
                       <Text className="text-amber-500 mx-2">•</Text>
-                      <Text className="text-amber-700 text-sm">
-                        {pet.peso}
-                      </Text>
+                      <Text className="text-amber-700 text-sm">{pet.peso}</Text>
                     </View>
 
                     <View className="flex-row items-center mt-2">
                       {pet.vacinado && (
                         <View className="flex-row items-center bg-green-50 px-2 py-1 rounded mr-2">
-                          <Feather name="check-circle" size={12} color="#16a34a" />
+                          <Feather
+                            name="check-circle"
+                            size={12}
+                            color="#16a34a"
+                          />
                           <Text className="text-green-700 text-xs ml-1 font-semibold">
                             Vacinado
                           </Text>
@@ -442,7 +439,11 @@ export default function ManagePets() {
                       )}
                       {pet.castrado && (
                         <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded">
-                          <Feather name="check-circle" size={12} color="#2563eb" />
+                          <Feather
+                            name="check-circle"
+                            size={12}
+                            color="#2563eb"
+                          />
                           <Text className="text-blue-700 text-xs ml-1 font-semibold">
                             Castrado
                           </Text>
@@ -452,10 +453,7 @@ export default function ManagePets() {
                   </View>
                 </View>
 
-                <Text
-                  className="text-amber-600 text-sm mt-3"
-                  numberOfLines={2}
-                >
+                <Text className="text-amber-600 text-sm mt-3" numberOfLines={2}>
                   {pet.descricao}
                 </Text>
               </TouchableOpacity>
@@ -584,7 +582,9 @@ export default function ManagePets() {
                 />
 
                 {/* Peso */}
-                <Text className="text-amber-700 font-semibold mb-2">Peso *</Text>
+                <Text className="text-amber-700 font-semibold mb-2">
+                  Peso *
+                </Text>
                 <TextInput
                   placeholder="Ex: 10kg, 5.5kg"
                   value={editPeso}
@@ -594,7 +594,9 @@ export default function ManagePets() {
                 />
 
                 {/* Sexo */}
-                <Text className="text-amber-700 font-semibold mb-2">Sexo *</Text>
+                <Text className="text-amber-700 font-semibold mb-2">
+                  Sexo *
+                </Text>
                 <View className="flex-row mb-4">
                   <TouchableOpacity
                     onPress={() => setEditSexo("Macho")}
@@ -637,12 +639,16 @@ export default function ManagePets() {
                   <TouchableOpacity
                     onPress={() => setEditStatus("Disponível")}
                     className={`flex-1 py-3 mr-2 rounded-lg ${
-                      editStatus === "Disponível" ? "bg-green-500" : "bg-gray-200"
+                      editStatus === "Disponível"
+                        ? "bg-green-500"
+                        : "bg-gray-200"
                     }`}
                   >
                     <Text
                       className={`text-center font-bold ${
-                        editStatus === "Disponível" ? "text-white" : "text-gray-600"
+                        editStatus === "Disponível"
+                          ? "text-white"
+                          : "text-gray-600"
                       }`}
                     >
                       Disponível
@@ -656,7 +662,9 @@ export default function ManagePets() {
                   >
                     <Text
                       className={`text-center font-bold ${
-                        editStatus === "Adotado" ? "text-white" : "text-gray-600"
+                        editStatus === "Adotado"
+                          ? "text-white"
+                          : "text-gray-600"
                       }`}
                     >
                       Adotado
