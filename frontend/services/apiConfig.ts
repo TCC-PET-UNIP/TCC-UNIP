@@ -55,8 +55,8 @@ export const apiRequest = async (
 // Helper para pegar o token (será implementado no authService)
 const getAuthToken = async (): Promise<string | null> => {
   try {
-    const AsyncStorage = require("@react-native-async-storage/async-storage")
-      .default;
+    const AsyncStorage =
+      require("@react-native-async-storage/async-storage").default;
     return await AsyncStorage.getItem("userToken");
   } catch {
     return null;

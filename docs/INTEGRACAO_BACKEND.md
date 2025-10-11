@@ -14,6 +14,7 @@ A integração com o backend Django está **COMPLETA** para os seguintes endpoin
 ## 🚀 Como Rodar o Backend
 
 ### Pré-requisitos:
+
 - Docker Desktop instalado
 - Python 3.x instalado
 - PostgreSQL (via Docker)
@@ -21,38 +22,45 @@ A integração com o backend Django está **COMPLETA** para os seguintes endpoin
 ### Passos:
 
 1. **Navegar para a pasta backend:**
+
    ```bash
    cd backend
    ```
 
 2. **Instalar dependências:**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Iniciar o container Docker (PostgreSQL):**
+
    ```bash
    docker-compose up -d
    ```
 
 4. **Aplicar migrações do banco de dados:**
+
    ```bash
    python manage.py migrate
    ```
 
 5. **Rodar o servidor Django:**
+
    ```bash
    python manage.py runserver
    ```
 
 6. **Verificar se está funcionando:**
+
    ```bash
    curl http://localhost:8000/server/health
    ```
-   
+
    Resposta esperada:
+
    ```json
-   {"status": "ok"}
+   { "status": "ok" }
    ```
 
 ---
@@ -60,16 +68,19 @@ A integração com o backend Django está **COMPLETA** para os seguintes endpoin
 ## 📱 Como Rodar o Frontend
 
 1. **Navegar para a pasta frontend:**
+
    ```bash
    cd frontend
    ```
 
 2. **Instalar dependências:**
+
    ```bash
    npm install
    ```
 
 3. **Iniciar o Expo:**
+
    ```bash
    npx expo start
    ```
@@ -84,13 +95,15 @@ A integração com o backend Django está **COMPLETA** para os seguintes endpoin
 ## 🔧 Configuração da API
 
 O endereço da API está configurado em:
+
 ```
 frontend/services/apiConfig.ts
 ```
 
 **URL atual:**
+
 ```typescript
-BASE_URL: "http://localhost:8000/server"
+BASE_URL: "http://localhost:8000/server";
 ```
 
 ### ⚠️ Importante para dispositivos físicos:
@@ -98,17 +111,20 @@ BASE_URL: "http://localhost:8000/server"
 Se você estiver testando em um dispositivo físico (celular), precisa usar o IP da sua máquina ao invés de `localhost`:
 
 1. Descubra seu IP local:
+
    - Windows: `ipconfig` (procure por "Endereço IPv4")
    - Mac/Linux: `ifconfig` ou `ip addr`
 
 2. Atualize o `apiConfig.ts`:
+
    ```typescript
-   BASE_URL: "http://SEU_IP:8000/server"
+   BASE_URL: "http://SEU_IP:8000/server";
    ```
-   
+
    Exemplo:
+
    ```typescript
-   BASE_URL: "http://192.168.1.100:8000/server"
+   BASE_URL: "http://192.168.1.100:8000/server";
    ```
 
 ---
@@ -116,12 +132,15 @@ Se você estiver testando em um dispositivo físico (celular), precisa usar o IP
 ## 🧪 Testando a Integração
 
 ### 1. Cadastro de Adotante:
+
 Na tela de Register, escolha "ADOTANTE" e preencha os dados. O app agora enviará os dados para o backend real.
 
 ### 2. Cadastro de ONG:
+
 Na tela de Register, escolha "ONG" e preencha os dados incluindo CNPJ.
 
 ### 3. Login:
+
 Use as credenciais criadas para fazer login. O token JWT será salvo automaticamente.
 
 ---
@@ -139,15 +158,18 @@ Após login/cadastro bem-sucedido, os seguintes dados são salvos no AsyncStorag
 ## 🐛 Troubleshooting
 
 ### Erro: "Network request failed"
+
 - ✅ Verifique se o backend está rodando
 - ✅ Verifique se a URL está correta
 - ✅ Se estiver em dispositivo físico, use o IP da máquina
 
 ### Erro: "Cannot connect to localhost"
+
 - ✅ Se estiver em emulador Android, use `http://10.0.2.2:8000`
 - ✅ Se estiver em dispositivo físico, use o IP da sua máquina
 
 ### Erro: "CORS Policy"
+
 - ✅ Verifique se `django-cors-headers` está instalado
 - ✅ Verifique configurações de CORS no `settings.py`
 
@@ -156,9 +178,11 @@ Após login/cadastro bem-sucedido, os seguintes dados são salvos no AsyncStorag
 ## 📊 Arquivos Modificados
 
 ### Novos arquivos:
+
 - ✅ `frontend/services/apiConfig.ts` - Configuração centralizada da API
 
 ### Arquivos atualizados:
+
 - ✅ `frontend/services/authService.ts` - Integrado com backend real
 - ✅ `frontend/services/authService.mock.ts` - Backup dos dados mockados
 

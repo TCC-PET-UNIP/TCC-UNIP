@@ -270,7 +270,11 @@ class AuthService {
 
   // Logout
   async logout(): Promise<void> {
-    await AsyncStorage.multiRemove(["userToken", "refreshToken", "userProfile"]);
+    await AsyncStorage.multiRemove([
+      "userToken",
+      "refreshToken",
+      "userProfile",
+    ]);
   }
 
   // Verificar se usuário está logado
