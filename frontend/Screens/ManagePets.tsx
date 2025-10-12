@@ -77,7 +77,7 @@ export default function ManagePets() {
       // TODO: Buscar pets da ONG do backend
       // const response = await apiRequest(`/pets?ong_id=${userProfile.id}`);
       // setPets(response.pets);
-      
+
       // Por enquanto, lista vazia (sem dados mockados)
       setPets([]);
     } catch (error) {

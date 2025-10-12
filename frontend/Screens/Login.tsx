@@ -233,7 +233,6 @@ export default function Login() {
           </TouchableOpacity>
           */}
 
-
           <Link href="/register" asChild>
             <TouchableOpacity>
               <Text className="text-[#B87B56] font-bold underline text-center">

@@ -113,42 +113,42 @@ export default function Home() {
               pet.vetor_caracteristicas
             );
 
-          return (
-            <View key={pet.id} className="pet-card">
-              <View className="pet-image-container">
-                <Image
-                  source={pet.foto}
-                  className="pet-image"
-                  resizeMode="cover"
-                />
-              </View>
-
-              <View className="flex-1">
-                <Text className="pet-title">{pet.nome}</Text>
-
-                <View className="characteristics-container">
-                  <Text className="pet-section-title">Características</Text>
-                  <View className="characteristics-list">
-                    {caracteristicas.map((caracteristica, index) => (
-                      <View key={index} className="characteristic-item">
-                        <Text className="pet-characteristic">
-                          • {caracteristica}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
+            return (
+              <View key={pet.id} className="pet-card">
+                <View className="pet-image-container">
+                  <Image
+                    source={pet.foto}
+                    className="pet-image"
+                    resizeMode="cover"
+                  />
                 </View>
 
-                <TouchableOpacity
-                  className="btn-pethelper-primary mt-1"
-                  onPress={() => handleVerMais(pet.id)}
-                >
-                  <Text className="btn-pethelper-text">Ver Mais</Text>
-                </TouchableOpacity>
+                <View className="flex-1">
+                  <Text className="pet-title">{pet.nome}</Text>
+
+                  <View className="characteristics-container">
+                    <Text className="pet-section-title">Características</Text>
+                    <View className="characteristics-list">
+                      {caracteristicas.map((caracteristica, index) => (
+                        <View key={index} className="characteristic-item">
+                          <Text className="pet-characteristic">
+                            • {caracteristica}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    className="btn-pethelper-primary mt-1"
+                    onPress={() => handleVerMais(pet.id)}
+                  >
+                    <Text className="btn-pethelper-text">Ver Mais</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          );
-        })
+            );
+          })
         )}
       </ScrollView>
 
