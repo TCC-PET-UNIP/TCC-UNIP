@@ -74,45 +74,12 @@ export default function ManagePets() {
     try {
       setLoading(true);
 
-      // Simular delay de rede
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Por enquanto, dados mockados
-      // Em produção, isso faria uma chamada à API para buscar pets da ONG
-      const mockOngPets: Pet[] = [
-        {
-          id: 1,
-          ONG_id: "mock-ong-id",
-          nome: "Rex",
-          idade: 3,
-          descricao: "Cachorro dócil e carinhoso",
-          status: "Disponível",
-          vetor_caracteristicas: [1, 2, 3],
-          raca: "Labrador",
-          peso: "25kg",
-          sexo: "Macho",
-          vacinado: true,
-          castrado: true,
-          foto: require("@/assets/images/Dog_Login.png"),
-        },
-        {
-          id: 2,
-          ONG_id: "mock-ong-id",
-          nome: "Luna",
-          idade: 2,
-          descricao: "Gatinha muito tranquila",
-          status: "Disponível",
-          vetor_caracteristicas: [1, 2, 3],
-          raca: "Persa",
-          peso: "4kg",
-          sexo: "Fêmea",
-          vacinado: true,
-          castrado: true,
-          foto: require("@/assets/images/Dog_Login.png"),
-        },
-      ];
-
-      setPets(mockOngPets);
+      // TODO: Buscar pets da ONG do backend
+      // const response = await apiRequest(`/pets?ong_id=${userProfile.id}`);
+      // setPets(response.pets);
+      
+      // Por enquanto, lista vazia (sem dados mockados)
+      setPets([]);
     } catch (error) {
       console.error("Erro ao carregar pets:", error);
       Alert.alert("Erro", "Não foi possível carregar os pets.");

@@ -157,7 +157,7 @@ export default function Login() {
           <TouchableOpacity
             onPress={handleLogin}
             disabled={loading}
-            className="w-full bg-[#8DC6CE] rounded-lg py-3 mb-3"
+            className="w-full bg-[#8DC6CE] rounded-lg py-3 mb-4"
             style={{ opacity: loading ? 0.7 : 1 }}
           >
             {loading ? (
@@ -174,6 +174,8 @@ export default function Login() {
             )}
           </TouchableOpacity>
 
+          {/* DEMO LOGINS - Comentados para usar dados reais */}
+          {/* 
           <TouchableOpacity
             onPress={() => handleMockLogin("ADOTANTE")}
             disabled={loading}
@@ -229,6 +231,8 @@ export default function Login() {
               </View>
             )}
           </TouchableOpacity>
+          */}
+
 
           <Link href="/register" asChild>
             <TouchableOpacity>

@@ -11,12 +11,12 @@ import {
 import Feather from "@expo/vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authService from "../services/authService";
-import { mockPets, getCaracteristicasTexto } from "../mockData/mockPets";
+import { getCaracteristicasTexto } from "../mockData/mockPets";
 import { Pet } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
 
 export default function Home() {
-  const [pets, setPets] = useState<Pet[]>(mockPets);
+  const [pets, setPets] = useState<Pet[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const router = useRouter();
@@ -52,9 +52,9 @@ export default function Home() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+    // TODO: Buscar pets do backend
     setTimeout(() => {
-      const shuffledPets = [...mockPets].sort(() => Math.random() - 0.5);
-      setPets(shuffledPets);
+      // Por enquanto, apenas reseta o estado de refreshing
       setRefreshing(false);
     }, 1000);
   }, []);
@@ -97,10 +97,21 @@ export default function Home() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {pets.map((pet) => {
-          const caracteristicas = getCaracteristicasTexto(
-            pet.vetor_caracteristicas
-          );
+        {pets.length === 0 ? (
+          <View className="flex items-center justify-center py-16">
+            <Feather name="inbox" size={64} color="#B8B8B8" />
+            <Text className="text-center text-gray-500 mt-4 text-lg">
+              Nenhum pet disponível no momento
+            </Text>
+            <Text className="text-center text-gray-400 mt-2">
+              Novos pets serão adicionados em breve!
+            </Text>
+          </View>
+        ) : (
+          pets.map((pet) => {
+            const caracteristicas = getCaracteristicasTexto(
+              pet.vetor_caracteristicas
+            );
 
           return (
             <View key={pet.id} className="pet-card">
@@ -137,7 +148,8 @@ export default function Home() {
               </View>
             </View>
           );
-        })}
+        })
+        )}
       </ScrollView>
 
       {/* Navegação inferior */}
