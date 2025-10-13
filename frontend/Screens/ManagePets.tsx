@@ -95,7 +95,7 @@ export default function ManagePets() {
   }, []);
 
   const handleAddPet = () => {
-    router.push("/add-pet");
+    router.push("/add-pet" as any);
   };
 
   const handleEditPet = (petId: number) => {
