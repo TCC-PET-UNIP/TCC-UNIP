@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "tcc-unip",
+    "name": "Petlar",
     "slug": "tcc-unip",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,7 +16,12 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.diego1012.tccunip"
+      "package": "com.diego1012.tccunip",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",

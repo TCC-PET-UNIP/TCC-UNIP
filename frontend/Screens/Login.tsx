@@ -116,7 +116,7 @@ export default function Login() {
           <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-20 mb-2 overflow-hidden border-4 border-[#B87B56]">
             <Image
               source={require("@/assets/images/Dog_Login.png")}
-              className="w-28 h-28"
+              style={{ width: 112, height: 112 }}
               resizeMode="contain"
             />
           </View>
