@@ -174,12 +174,11 @@ export default function Login() {
             )}
           </TouchableOpacity>
 
-          {/* DEMO LOGINS - Comentados para usar dados reais */}
-          {/* 
+          {/* Botão Demo Login */}
           <TouchableOpacity
             onPress={() => handleMockLogin("ADOTANTE")}
             disabled={loading}
-            className="w-full bg-[#ad3434] rounded-lg py-3 mb-2"
+            className="w-full bg-[#ad3434] rounded-lg py-3 mb-4"
             style={{ opacity: loading ? 0.7 : 1 }}
           >
             {loading ? (
@@ -192,60 +191,27 @@ export default function Login() {
             ) : (
               <View className="flex-row items-center justify-center">
                 <Feather
-                  name="user"
+                  name="zap"
                   size={16}
                   color="#fff"
                   style={{ marginRight: 8 }}
                 />
                 <Text className="text-white text-center font-bold text-base">
-                  DEMO - ADOTANTE
+                  DEMO LOGIN
                 </Text>
               </View>
             )}
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => handleMockLogin("ONG")}
-            disabled={loading}
-            className="w-full bg-[#B87B56] rounded-lg py-3 mb-4"
-            style={{ opacity: loading ? 0.7 : 1 }}
-          >
-            {loading ? (
-              <View className="flex-row items-center justify-center">
-                <ActivityIndicator color="#fff" />
-                <Text className="text-white text-center font-bold text-base ml-2">
-                  ENTRANDO...
-                </Text>
-              </View>
-            ) : (
-              <View className="flex-row items-center justify-center">
-                <Feather
-                  name="briefcase"
-                  size={16}
-                  color="#fff"
-                  style={{ marginRight: 8 }}
-                />
-                <Text className="text-white text-center font-bold text-base">
-                  DEMO - ONG
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          */}
 
           <Link href="/register" asChild>
             <TouchableOpacity>
-              <Text className="text-[#B87B56] font-bold underline text-center">
+              <Text className="text-[#B87B56] font-bold underline text-center top-5">
                 Ainda não tem uma conta? Cadastre-se aqui
               </Text>
             </TouchableOpacity>
           </Link>
         </View>
       </View>
-
-      <Text className="text-white font-bold text-center relative bottom-40 w-full">
-        TCC - UNIP
-      </Text>
     </KeyboardAvoidingView>
   );
 }
