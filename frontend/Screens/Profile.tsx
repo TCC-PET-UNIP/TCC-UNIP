@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   View,
   Text,
@@ -13,7 +19,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import * as ImagePicker from "expo-image-picker";
+import ImagePickerHelper from "../utils/imagePicker";
 import authService from "../services/authService";
 import { UserProfile } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
@@ -37,6 +43,12 @@ export default function Profile() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Theme / constants
+  const THEME_COLOR = "#B87B56";
+  const INPUT_BASE = "border-2 rounded-xl px-4 py-3 text-amber-700";
+  const INPUT_EDIT = "border-amber-300 bg-white";
+  const INPUT_READONLY = "border-gray-200 bg-gray-50";
+
   // Estados para os campos editáveis
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
@@ -44,7 +56,15 @@ export default function Profile() {
   const [cnpj, setCnpj] = useState("");
   const [idade, setIdade] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [profileImage, setProfileImage] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<{ uri: string } | null>(
+    null
+  );
+
+  // Snapshot of original values to detect changes
+  const originalSnapshotRef = useRef<string | null>(null);
+
+  const inputClass = (editing: boolean) =>
+    `${INPUT_BASE} ${editing ? INPUT_EDIT : INPUT_READONLY}`;
 
   // Estados para endereço
   const [logradouro, setLogradouro] = useState("");
@@ -81,80 +101,19 @@ export default function Profile() {
     }
   };
 
-  const handleImagePicker = () => {
-    Alert.alert("Escolher Foto", "Como deseja adicionar uma foto?", [
-      {
-        text: "Cancelar",
-        style: "cancel",
-      },
-      {
-        text: "Câmera",
-        onPress: async () => {
-          try {
-            // Solicitar permissão da câmera
-            const permissionResult =
-              await ImagePicker.requestCameraPermissionsAsync();
+  const pickFromCamera = useCallback(async () => {
+    const picked = await ImagePickerHelper.pickFromCamera();
+    if (picked) setProfileImage(picked);
+  }, []);
 
-            if (!permissionResult.granted) {
-              Alert.alert(
-                "Permissão Negada",
-                "É necessário permitir acesso à câmera para tirar fotos."
-              );
-              return;
-            }
+  const pickFromGallery = useCallback(async () => {
+    const picked = await ImagePickerHelper.pickFromGallery();
+    if (picked) setProfileImage(picked);
+  }, []);
 
-            // Abrir câmera
-            const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ["images"],
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets && result.assets[0]) {
-              setProfileImage({ uri: result.assets[0].uri });
-            }
-          } catch (error) {
-            console.error("Erro ao abrir câmera:", error);
-            Alert.alert("Erro", "Não foi possível abrir a câmera.");
-          }
-        },
-      },
-      {
-        text: "Galeria",
-        onPress: async () => {
-          try {
-            // Solicitar permissão da galeria
-            const permissionResult =
-              await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-            if (!permissionResult.granted) {
-              Alert.alert(
-                "Permissão Negada",
-                "É necessário permitir acesso à galeria para escolher fotos."
-              );
-              return;
-            }
-
-            // Abrir galeria
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ["images"],
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets && result.assets[0]) {
-              setProfileImage({ uri: result.assets[0].uri });
-            }
-          } catch (error) {
-            console.error("Erro ao abrir galeria:", error);
-            Alert.alert("Erro", "Não foi possível abrir a galeria.");
-          }
-        },
-      },
-    ]);
-  };
+  const handleImagePicker = useCallback(() => {
+    ImagePickerHelper.showImagePickerOptions(pickFromCamera, pickFromGallery);
+  }, [pickFromCamera, pickFromGallery]);
 
   const populateFields = (profile: UserProfile) => {
     setEmail(profile.email);
@@ -170,7 +129,85 @@ export default function Profile() {
     setCidade(profile.endereco.cidade);
     setUf(profile.endereco.uf);
     setCep(profile.endereco.cep);
+
+    // If the profile includes an image (common keys used across the app), use it
+    const maybeImage =
+      (profile as any).foto ||
+      (profile as any).ong_foto ||
+      (profile as any).logo ||
+      (profile as any).imagem ||
+      (profile as any).foto_url ||
+      (profile as any).image;
+    if (maybeImage) {
+      // normalize string -> { uri }
+      const normalized =
+        typeof maybeImage === "string" ? { uri: maybeImage } : maybeImage;
+      setProfileImage(normalized);
+    }
+
+    // store a minimal snapshot for change detection
+    const snapshot = {
+      email: profile.email || "",
+      nome: profile.nome || "",
+      nomeFantasia: profile.nome_fantasia || "",
+      cnpj: profile.cnpj || "",
+      idade: profile.idade?.toString() || "",
+      telefone: profile.telefone || "",
+      endereco: {
+        logradouro: profile.endereco.logradouro || "",
+        numero: profile.endereco.numero || "",
+        bairro: profile.endereco.bairro || "",
+        cidade: profile.endereco.cidade || "",
+        uf: profile.endereco.uf || "",
+        cep: profile.endereco.cep || "",
+      },
+      imageUri: maybeImage
+        ? typeof maybeImage === "string"
+          ? maybeImage
+          : maybeImage.uri || null
+        : null,
+    };
+    originalSnapshotRef.current = JSON.stringify(snapshot);
   };
+
+  const hasChanges = useMemo(() => {
+    if (!userProfile || !originalSnapshotRef.current) return false;
+
+    const current = {
+      email: email || "",
+      nome: nome || "",
+      nomeFantasia: nomeFantasia || "",
+      cnpj: cnpj || "",
+      idade: idade || "",
+      telefone: telefone || "",
+      endereco: {
+        logradouro: logradouro || "",
+        numero: numero || "",
+        bairro: bairro || "",
+        cidade: cidade || "",
+        uf: uf || "",
+        cep: cep || "",
+      },
+      imageUri: profileImage ? profileImage.uri || null : null,
+    };
+
+    return JSON.stringify(current) !== originalSnapshotRef.current;
+  }, [
+    email,
+    nome,
+    nomeFantasia,
+    cnpj,
+    idade,
+    telefone,
+    logradouro,
+    numero,
+    bairro,
+    cidade,
+    uf,
+    cep,
+    profileImage,
+    userProfile,
+  ]);
 
   const handleSave = async () => {
     if (!userProfile) return;
@@ -270,6 +307,8 @@ export default function Profile() {
       await authService.updateProfile(updatedProfile);
 
       setUserProfile(updatedProfile);
+      // Re-populate fields and refresh original snapshot so 'hasChanges' becomes false
+      populateFields(updatedProfile);
       setIsEditing(false);
 
       Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
@@ -288,28 +327,28 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const handleTelefoneChange = (text: string) => {
+  const handleTelefoneChange = useCallback((text: string) => {
     setTelefone(formatPhone(text));
-  };
+  }, []);
 
-  const handleCEPChange = (text: string) => {
+  const handleCEPChange = useCallback((text: string) => {
     const cleaned = removeFormatting(text);
     if (cleaned.length <= 8) {
       setCep(cleaned.length === 8 ? formatCEP(cleaned) : cleaned);
     }
-  };
+  }, []);
 
-  const handleCNPJChange = (text: string) => {
+  const handleCNPJChange = useCallback((text: string) => {
     const cleaned = removeFormatting(text);
     if (cleaned.length <= 14) {
       setCnpj(cleaned.length === 14 ? formatCNPJ(cleaned) : cleaned);
     }
-  };
+  }, []);
 
   if (loading) {
     return (
       <View className="loading-container">
-        <ActivityIndicator size="large" color="#B87B56" />
+        <ActivityIndicator size="large" color={THEME_COLOR} />
         <Text className="loading-text">Carregando perfil...</Text>
       </View>
     );
@@ -321,7 +360,7 @@ export default function Profile() {
         <Feather name="user-x" size={48} color="#B87B56" />
         <Text className="loading-text">Erro ao carregar perfil</Text>
         <TouchableOpacity
-          className="bg-cyan-300 px-6 py-3 rounded-xl mt-4"
+          className="bg-amber-300 px-6 py-3 rounded-xl mt-4"
           onPress={loadUserProfile}
         >
           <Text className="text-pethelper-primary font-semibold">
@@ -339,7 +378,7 @@ export default function Profile() {
     >
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="px-6 pt-12 pb-6 bg-amber-700/10">
+        <View className="px-6 pt-5 pb-6 bg-amber-700/10">
           <View className="flex-row justify-between items-center">
             <View>
               <Text className="text-2xl font-bold text-red-800 mb-1">
@@ -360,14 +399,18 @@ export default function Profile() {
                     <Feather name="x" size={20} color="white" />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    className="bg-cyan-300 p-3 rounded-xl"
+                    className={`p-3 rounded-xl ${hasChanges && !saving ? "bg-amber-300" : "bg-gray-300"}`}
                     onPress={handleSave}
-                    disabled={saving}
+                    disabled={saving || !hasChanges}
                   >
                     {saving ? (
-                      <ActivityIndicator size="small" color="#B87B56" />
+                      <ActivityIndicator size="small" color={THEME_COLOR} />
                     ) : (
-                      <Feather name="check" size={20} color="#B87B56" />
+                      <Feather
+                        name="check"
+                        size={20}
+                        color={hasChanges ? THEME_COLOR : "white"}
+                      />
                     )}
                   </TouchableOpacity>
                 </>
@@ -412,7 +455,7 @@ export default function Profile() {
 
                   {isEditing && (
                     <TouchableOpacity
-                      className="absolute -bottom-2 -right-2 bg-cyan-300 p-2 rounded-full border-2 border-white"
+                      className="absolute -bottom-2 -right-2 bg-amber-300 p-2 rounded-full border-2 border-white"
                       onPress={handleImagePicker}
                     >
                       <Feather name="camera" size={16} color="#B87B56" />
@@ -438,26 +481,6 @@ export default function Profile() {
                 : "Dados da ONG"}
             </Text>
 
-            {/* Email */}
-            <View className="mb-4">
-              <Text className="text-pethelper-primary font-medium mb-2">
-                Email
-              </Text>
-              <TextInput
-                className={`border-2 ${
-                  isEditing ? "border-cyan-300" : "border-gray-200"
-                } rounded-xl px-4 py-3 text-amber-700 bg-${
-                  isEditing ? "white" : "gray-50"
-                }`}
-                value={email}
-                onChangeText={setEmail}
-                editable={isEditing}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholder="seu@email.com"
-              />
-            </View>
-
             {/* Nome ou Nome Fantasia */}
             <View className="mb-4">
               <Text className="text-amber-700 font-medium mb-2">
@@ -466,11 +489,7 @@ export default function Profile() {
                   : "Nome Fantasia"}
               </Text>
               <TextInput
-                className={`border-2 ${
-                  isEditing ? "border-cyan-300" : "border-gray-200"
-                } rounded-xl px-4 py-3 text-amber-700 bg-${
-                  isEditing ? "white" : "gray-50"
-                }`}
+                className={inputClass(isEditing)}
                 value={userProfile.tipo === "ADOTANTE" ? nome : nomeFantasia}
                 onChangeText={
                   userProfile.tipo === "ADOTANTE" ? setNome : setNomeFantasia
@@ -484,16 +503,28 @@ export default function Profile() {
               />
             </View>
 
+            {/* Email */}
+            <View className="mb-4">
+              <Text className="text-pethelper-primary font-medium mb-2">
+                Email
+              </Text>
+              <TextInput
+                className={inputClass(isEditing)}
+                value={email}
+                onChangeText={setEmail}
+                editable={isEditing}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholder="seu@email.com"
+              />
+            </View>
+
             {/* Campos específicos por tipo */}
             {userProfile.tipo === "ADOTANTE" && (
               <View className="mb-4">
                 <Text className="text-amber-700 font-medium mb-2">Idade</Text>
                 <TextInput
-                  className={`border-2 ${
-                    isEditing ? "border-cyan-300" : "border-gray-200"
-                  } rounded-xl px-4 py-3 text-amber-700 bg-${
-                    isEditing ? "white" : "gray-50"
-                  }`}
+                  className={inputClass(isEditing)}
                   value={idade}
                   onChangeText={setIdade}
                   editable={isEditing}
@@ -507,11 +538,7 @@ export default function Profile() {
               <View className="mb-4">
                 <Text className="text-amber-700 font-medium mb-2">CNPJ</Text>
                 <TextInput
-                  className={`border-2 ${
-                    isEditing ? "border-cyan-300" : "border-gray-200"
-                  } rounded-xl px-4 py-3 text-amber-700 bg-${
-                    isEditing ? "white" : "gray-50"
-                  }`}
+                  className={inputClass(isEditing)}
                   value={cnpj}
                   onChangeText={handleCNPJChange}
                   editable={isEditing}
@@ -525,11 +552,7 @@ export default function Profile() {
             <View>
               <Text className="text-amber-700 font-medium mb-2">Telefone</Text>
               <TextInput
-                className={`border-2 ${
-                  isEditing ? "border-cyan-300" : "border-gray-200"
-                } rounded-xl px-4 py-3 text-amber-700 bg-${
-                  isEditing ? "white" : "gray-50"
-                }`}
+                className={inputClass(isEditing)}
                 value={telefone}
                 onChangeText={handleTelefoneChange}
                 editable={isEditing}
@@ -553,11 +576,7 @@ export default function Profile() {
                   Logradouro
                 </Text>
                 <TextInput
-                  className={`border-2 ${
-                    isEditing ? "border-cyan-300" : "border-gray-200"
-                  } rounded-xl px-4 py-3 text-amber-700 bg-${
-                    isEditing ? "white" : "gray-50"
-                  }`}
+                  className={inputClass(isEditing)}
                   value={logradouro}
                   onChangeText={setLogradouro}
                   editable={isEditing}
@@ -567,11 +586,7 @@ export default function Profile() {
               <View className="w-20">
                 <Text className="text-amber-700 font-medium mb-2">Número</Text>
                 <TextInput
-                  className={`border-2 ${
-                    isEditing ? "border-cyan-300" : "border-gray-200"
-                  } rounded-xl px-4 py-3 text-amber-700 bg-${
-                    isEditing ? "white" : "gray-50"
-                  }`}
+                  className={inputClass(isEditing)}
                   value={numero}
                   onChangeText={setNumero}
                   editable={isEditing}
@@ -584,11 +599,7 @@ export default function Profile() {
             <View className="mb-4">
               <Text className="text-amber-700 font-medium mb-2">Bairro</Text>
               <TextInput
-                className={`border-2 ${
-                  isEditing ? "border-cyan-300" : "border-gray-200"
-                } rounded-xl px-4 py-3 text-amber-700 bg-${
-                  isEditing ? "white" : "gray-50"
-                }`}
+                className={inputClass(isEditing)}
                 value={bairro}
                 onChangeText={setBairro}
                 editable={isEditing}
@@ -601,11 +612,7 @@ export default function Profile() {
               <View className="flex-1 mr-2">
                 <Text className="text-amber-700 font-medium mb-2">Cidade</Text>
                 <TextInput
-                  className={`border-2 ${
-                    isEditing ? "border-cyan-300" : "border-gray-200"
-                  } rounded-xl px-4 py-3 text-amber-700 bg-${
-                    isEditing ? "white" : "gray-50"
-                  }`}
+                  className={inputClass(isEditing)}
                   value={cidade}
                   onChangeText={setCidade}
                   editable={isEditing}
@@ -615,11 +622,7 @@ export default function Profile() {
               <View className="w-16">
                 <Text className="text-amber-700 font-medium mb-2">UF</Text>
                 <TextInput
-                  className={`border-2 ${
-                    isEditing ? "border-cyan-300" : "border-gray-200"
-                  } rounded-xl px-4 py-3 text-amber-700 bg-${
-                    isEditing ? "white" : "gray-50"
-                  }`}
+                  className={inputClass(isEditing)}
                   value={uf}
                   onChangeText={(text) => setUf(text.toUpperCase())}
                   editable={isEditing}
@@ -634,11 +637,7 @@ export default function Profile() {
             <View>
               <Text className="text-amber-700 font-medium mb-2">CEP</Text>
               <TextInput
-                className={`border-2 ${
-                  isEditing ? "border-cyan-300" : "border-gray-200"
-                } rounded-xl px-4 py-3 text-amber-700 bg-${
-                  isEditing ? "white" : "gray-50"
-                }`}
+                className={inputClass(isEditing)}
                 value={cep}
                 onChangeText={handleCEPChange}
                 editable={isEditing}

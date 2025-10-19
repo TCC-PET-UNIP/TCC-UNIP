@@ -73,9 +73,9 @@ export default function Home() {
 
   return (
     <View className="container-pethelper">
-      {/* Header */}
-      <View className="header-pethelper">
-        <Text className="text-xl font-bold text-pethelper-dark flex-1">
+      {/* Header - posicionado mais para cima */}
+      <View className="absolute top-4 left-0 right-0 px-4 flex-row items-center justify-between z-10">
+        <Text className="text-xl font-bold text-pethelper-dark">
           Pets pra você
         </Text>
         <TouchableOpacity className="btn-pethelper-logout" onPress={goToLogin}>
@@ -86,7 +86,18 @@ export default function Home() {
       {/* Content */}
       <ScrollView
         className="content-pethelper"
-        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        contentContainerStyle={
+          pets.length === 0
+            ? {
+                padding: 16,
+                paddingBottom: 120,
+                paddingTop: 88,
+                flexGrow: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }
+            : { padding: 16, paddingBottom: 120, paddingTop: 88 }
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

@@ -45,14 +45,14 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
       )}
 
       {/* Notificações */}
-      <TouchableOpacity
+      {/*<TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"
         onPress={() => {
           // TODO: Implementar tela de notificações
         }}
       >
         <Feather name="bell" size={24} color={getIconColor("notificacoes")} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"
