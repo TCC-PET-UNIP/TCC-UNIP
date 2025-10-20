@@ -235,7 +235,7 @@ export default function Login() {
 
           <Link href="/register" asChild>
             <TouchableOpacity>
-              <Text className="text-[#B87B56] font-bold underline text-center top-5">
+              <Text className="text-[#B87B56] font-bold underline text-center top-3">
                 Ainda não tem uma conta? Cadastre-se aqui
               </Text>
             </TouchableOpacity>
