@@ -33,7 +33,6 @@ export async function pickFromCamera(): Promise<PickResult> {
 
   try {
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -62,7 +61,6 @@ export async function pickFromGallery(): Promise<PickResult> {
 
   try {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
