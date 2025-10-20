@@ -83,7 +83,7 @@ export default function Login() {
     try {
       // Dados de usuário mockado para teste
       const mockLoginData: LoginRequest = {
-        email: userType === "ONG" ? "ong@petlar.com" : "teste@petlar.com",
+        email: userType === "ONG" ? "teste2@email.com" : "teste@email.com",
         senha: "123456",
       };
 
@@ -115,7 +115,7 @@ export default function Login() {
         <View className="w-full min-h-[450px] max-w-[380px] bg-[#F8F3EC] rounded-3xl p-10 items-center shadow-lg">
           <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-20 mb-2 overflow-hidden border-4 border-[#B87B56]">
             <Image
-              source={require("@/assets/images/Dog_Login.png")}
+              source={require("@/assets/images/Petlar - Logo.png")}
               style={{ width: 112, height: 112 }}
               resizeMode="contain"
             />
@@ -174,34 +174,64 @@ export default function Login() {
             )}
           </TouchableOpacity>
 
-          {/* Botão Demo Login */}
-          <TouchableOpacity
-            onPress={() => handleMockLogin("ADOTANTE")}
-            disabled={loading}
-            className="w-full bg-[#ad3434] rounded-lg py-3 mb-4"
-            style={{ opacity: loading ? 0.7 : 1 }}
-          >
-            {loading ? (
-              <View className="flex-row items-center justify-center">
-                <ActivityIndicator color="#fff" />
-                <Text className="text-white text-center font-bold text-base ml-2">
-                  ENTRANDO...
-                </Text>
-              </View>
-            ) : (
-              <View className="flex-row items-center justify-center">
-                <Feather
-                  name="zap"
-                  size={16}
-                  color="#fff"
-                  style={{ marginRight: 8 }}
-                />
-                <Text className="text-white text-center font-bold text-base">
-                  DEMO LOGIN
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          {/* Botões Demo Login: ADOTANTE e ONG (empilhados) */}
+          <View className="w-full flex-col mb-4">
+            <TouchableOpacity
+              onPress={() => handleMockLogin("ADOTANTE")}
+              disabled={loading}
+              className="w-full bg-[#ad3434] rounded-lg py-3 mb-3"
+              style={{ opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? (
+                <View className="flex-row items-center justify-center">
+                  <ActivityIndicator color="#fff" />
+                  <Text className="text-white text-center font-bold text-base ml-2">
+                    ENTRANDO...
+                  </Text>
+                </View>
+              ) : (
+                <View className="flex-row items-center justify-center">
+                  <Feather
+                    name="zap"
+                    size={16}
+                    color="#fff"
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text className="text-white text-center font-bold text-base">
+                    LOGIN ADOTANTE
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => handleMockLogin("ONG")}
+              disabled={loading}
+              className="w-full bg-[#6b9bb2] rounded-lg py-3"
+              style={{ opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? (
+                <View className="flex-row items-center justify-center">
+                  <ActivityIndicator color="#fff" />
+                  <Text className="text-white text-center font-bold text-base ml-2">
+                    ENTRANDO...
+                  </Text>
+                </View>
+              ) : (
+                <View className="flex-row items-center justify-center">
+                  <Feather
+                    name="home"
+                    size={16}
+                    color="#fff"
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text className="text-white text-center font-bold text-base">
+                    LOGIN ONG
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
 
           <Link href="/register" asChild>
             <TouchableOpacity>

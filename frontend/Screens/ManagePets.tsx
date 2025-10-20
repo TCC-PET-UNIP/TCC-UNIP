@@ -240,7 +240,7 @@ export default function ManagePets() {
   return (
     <View className="flex-1 bg-orange-50">
       {/* Header */}
-      <View className="bg-[#B87B56] pt-12 pb-6 px-6">
+      <View className="bg-[#B87B56] pt-5 pb-6 px-6">
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
             <Text className="text-2xl font-bold text-white">Meus Pets</Text>
@@ -261,7 +261,11 @@ export default function ManagePets() {
       {/* Content */}
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100, paddingTop: 16 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: 100,
+          paddingTop: 16,
+        }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

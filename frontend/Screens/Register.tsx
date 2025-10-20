@@ -291,9 +291,9 @@ export default function Register() {
       >
         <View className="flex-1 items-center justify-center px-4">
           <View className="w-full max-w-[400px] bg-[#F8F3EC] rounded-3xl p-8 items-center shadow-lg">
-            <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-20 mb-4 overflow-hidden border-4 border-[#B87B56]">
+            <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-5 mb-4 overflow-hidden border-4 border-[#B87B56]">
               <Image
-                source={require("@/assets/images/Dog_Login.png")}
+                source={require("@/assets/images/Petlar - Logo.png")}
                 style={{ width: 112, height: 112 }}
                 resizeMode="contain"
               />

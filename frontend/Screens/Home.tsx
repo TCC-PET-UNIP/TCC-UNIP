@@ -34,6 +34,12 @@ export default function Home() {
       }
 
       const profile = await authService.getUserProfile();
+      // Se o usuário for ONG, não deve acessar a Home pública — redireciona para gerenciamento de pets
+      if (profile?.tipo === "ONG") {
+        router.replace("/manage-pets");
+        return;
+      }
+
       setUserProfile(profile);
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
