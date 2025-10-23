@@ -152,6 +152,20 @@ export default function Register() {
 
     setLoading(true);
 
+    // Helper para identificar mensagem de email já existente
+    const isEmailExistsMessage = (m?: string) => {
+      if (!m) return false;
+      const s = m.toLowerCase();
+      return (
+        s.includes("email") &&
+        (s.includes("existe") ||
+          s.includes("já existe") ||
+          s.includes("already exist") ||
+          s.includes("already exists") ||
+          s.includes("exists"))
+      );
+    };
+
     try {
       if (userType === "ADOTANTE") {
         const registerData: RegisterAdotanteRequest = {
@@ -182,7 +196,17 @@ export default function Register() {
             },
           ]);
         } else {
-          Alert.alert("Erro", response.message);
+          if (isEmailExistsMessage(response.message)) {
+            Alert.alert(
+              "Email já cadastrado",
+              "Já existe uma conta registrada com esse email. Por favor, faça login ou recupere sua senha."
+            );
+          } else {
+            Alert.alert(
+              "Erro",
+              response.message || "Erro ao realizar cadastro"
+            );
+          }
         }
       } else {
         const registerData: RegisterONGRequest = {
@@ -210,7 +234,17 @@ export default function Register() {
             { text: "OK", onPress: () => router.replace("/home") },
           ]);
         } else {
-          Alert.alert("Erro", response.message);
+          if (isEmailExistsMessage(response.message)) {
+            Alert.alert(
+              "Email já cadastrado",
+              "Já existe uma conta registrada com esse email. Por favor, faça login ou recupere sua senha."
+            );
+          } else {
+            Alert.alert(
+              "Erro",
+              response.message || "Erro ao realizar cadastro"
+            );
+          }
         }
       }
     } catch (error) {
@@ -257,9 +291,9 @@ export default function Register() {
       >
         <View className="flex-1 items-center justify-center px-4">
           <View className="w-full max-w-[400px] bg-[#F8F3EC] rounded-3xl p-8 items-center shadow-lg">
-            <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-20 mb-4 overflow-hidden border-4 border-[#B87B56]">
+            <View className="w-32 h-32 rounded-full bg-[#B87B56] items-center justify-center -mt-5 mb-4 overflow-hidden border-4 border-[#B87B56]">
               <Image
-                source={require("@/assets/images/Dog_Login.png")}
+                source={require("@/assets/images/Petlar - Logo.png")}
                 style={{ width: 112, height: 112 }}
                 resizeMode="contain"
               />

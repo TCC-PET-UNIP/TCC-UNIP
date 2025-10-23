@@ -51,6 +51,8 @@ class AuthService {
           email: credentials.email,
           senha: credentials.senha,
         }),
+        // Não enviar header Authorization em rotas públicas
+        omitAuth: true,
       });
 
       // Processar resposta do backend
@@ -118,6 +120,8 @@ class AuthService {
       const response = await apiRequest(API_CONFIG.ENDPOINTS.REGISTER_ADOPTER, {
         method: "POST",
         body: JSON.stringify(requestData),
+        // Não enviar header Authorization em rotas públicas
+        omitAuth: true,
       });
 
       // Processar resposta
@@ -191,6 +195,8 @@ class AuthService {
       const response = await apiRequest(API_CONFIG.ENDPOINTS.REGISTER_ONG, {
         method: "POST",
         body: JSON.stringify(requestData),
+        // Não enviar header Authorization em rotas públicas
+        omitAuth: true,
       });
 
       // Processar resposta
@@ -270,7 +276,11 @@ class AuthService {
 
   // Logout
   async logout(): Promise<void> {
-    await AsyncStorage.multiRemove(["userToken", "refreshToken", "userProfile"]);
+    await AsyncStorage.multiRemove([
+      "userToken",
+      "refreshToken",
+      "userProfile",
+    ]);
   }
 
   // Verificar se usuário está logado

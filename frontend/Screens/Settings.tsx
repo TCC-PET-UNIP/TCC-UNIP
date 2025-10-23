@@ -103,7 +103,7 @@ export default function Settings() {
   return (
     <View className="flex-1 bg-orange-50">
       {/* Header */}
-      <View className="pt-8 pb-5 px-5 bg-orange-50 border-b border-amber-700/20">
+      <View className="pt-5 pb-5 px-5 bg-orange-50 border-b border-amber-700/20">
         <Text className="text-2xl font-bold text-gray-800">Configurações</Text>
         {userProfile && (
           <Text className="text-sm text-gray-600 mt-1">

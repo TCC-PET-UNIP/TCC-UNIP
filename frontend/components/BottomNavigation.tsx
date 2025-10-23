@@ -18,6 +18,7 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
   return (
     <View className="flex-row bg-orange-50 py-3 px-5 border-t border-amber-700/20 justify-around items-center absolute bottom-0 left-0 right-0 pb-5">
       {/* Home */}
+      {userType === "ADOTANTE" && 
       <TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"
         onPress={() => router.push("/home")}
@@ -30,6 +31,7 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
           }
         />
       </TouchableOpacity>
+    }
 
       {userType === "ONG" && (
         <TouchableOpacity
@@ -45,14 +47,14 @@ export default function BottomNavigation({ userType }: BottomNavigationProps) {
       )}
 
       {/* Notificações */}
-      <TouchableOpacity
+      {/*<TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"
         onPress={() => {
           // TODO: Implementar tela de notificações
         }}
       >
         <Feather name="bell" size={24} color={getIconColor("notificacoes")} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity
         className="p-2 rounded-xl items-center justify-center"

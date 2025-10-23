@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import * as ImagePicker from "expo-image-picker";
+import ImagePickerHelper from "../utils/imagePicker";
 import authService from "../services/authService";
 import { UserProfile, Pet } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
@@ -118,78 +118,16 @@ export default function ManagePets() {
   };
 
   const handleEditImagePicker = () => {
-    Alert.alert("Escolher Foto", "Como deseja adicionar uma foto do pet?", [
-      {
-        text: "Cancelar",
-        style: "cancel",
+    ImagePickerHelper.showImagePickerOptions(
+      async () => {
+        const picked = await ImagePickerHelper.pickFromCamera();
+        if (picked) setEditFoto(picked);
       },
-      {
-        text: "Câmera",
-        onPress: async () => {
-          try {
-            // Solicitar permissão da câmera
-            const permissionResult =
-              await ImagePicker.requestCameraPermissionsAsync();
-
-            if (!permissionResult.granted) {
-              Alert.alert(
-                "Permissão Negada",
-                "É necessário permitir acesso à câmera para tirar fotos."
-              );
-              return;
-            }
-
-            // Abrir câmera
-            const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ["images"],
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets && result.assets[0]) {
-              setEditFoto({ uri: result.assets[0].uri });
-            }
-          } catch (error) {
-            console.error("Erro ao abrir câmera:", error);
-            Alert.alert("Erro", "Não foi possível abrir a câmera.");
-          }
-        },
-      },
-      {
-        text: "Galeria",
-        onPress: async () => {
-          try {
-            // Solicitar permissão da galeria
-            const permissionResult =
-              await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-            if (!permissionResult.granted) {
-              Alert.alert(
-                "Permissão Negada",
-                "É necessário permitir acesso à galeria para escolher fotos."
-              );
-              return;
-            }
-
-            // Abrir galeria
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ["images"],
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets && result.assets[0]) {
-              setEditFoto({ uri: result.assets[0].uri });
-            }
-          } catch (error) {
-            console.error("Erro ao abrir galeria:", error);
-            Alert.alert("Erro", "Não foi possível abrir a galeria.");
-          }
-        },
-      },
-    ]);
+      async () => {
+        const picked = await ImagePickerHelper.pickFromGallery();
+        if (picked) setEditFoto(picked);
+      }
+    );
   };
 
   const handleSaveEdit = async () => {
@@ -302,7 +240,7 @@ export default function ManagePets() {
   return (
     <View className="flex-1 bg-orange-50">
       {/* Header */}
-      <View className="bg-[#B87B56] pt-12 pb-6 px-6">
+      <View className="bg-[#B87B56] pt-5 pb-6 px-6">
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
             <Text className="text-2xl font-bold text-white">Meus Pets</Text>
@@ -323,7 +261,11 @@ export default function ManagePets() {
       {/* Content */}
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100, paddingTop: 16 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: 100,
+          paddingTop: 16,
+        }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
