@@ -25,10 +25,10 @@ SECRET_KEY = 'django-insecure-$ufzqxr!5@*yupnbib+f7jz+p9&g459c0snzmjva9+(@6)5nab
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
 
-CORS_ALLOWED_ORIGINS = ['http://localhost:8081']
-
+# CORS_ALLOWED_ORIGINS = ['http://localhost:8081']
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
@@ -73,6 +73,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Database

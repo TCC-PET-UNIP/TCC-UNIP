@@ -1,6 +1,15 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from uuid_extensions import uuid7
+import os
+
+def ong_image_path(instance, filename):
+    return os.path.join('ong', str(instance.id), filename)
+
+
+def pet_image_path(instance, filename):
+    return os.path.join('pet', str(instance.id), filename)
+
 
 class Conta(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
@@ -26,6 +35,7 @@ class Ong(models.Model):
     telefone = models.CharField(max_length=30)
     endereco_id = models.OneToOneField(Endereco, on_delete=models.CASCADE)
     descricao = models.TextField(null=True, blank=True)
+    imagem = models.ImageField(upload_to=ong_image_path, null=True, blank=True)
 
 class Adotante(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
@@ -51,3 +61,4 @@ class Pets(models.Model):
     descricao = models.TextField()
     disponivel = models.BooleanField(default=True)
     vetor_caracteristicas = ArrayField(models.IntegerField())
+    imagem = models.ImageField(upload_to=pet_image_path, null=True, blank=True)

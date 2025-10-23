@@ -22,7 +22,7 @@ class OngSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ong
-        fields = ['id', 'conta', 'nome_fantasia', 'cnpj', 'telefone', 'endereco']
+        fields = ['id', 'conta', 'nome_fantasia', 'cnpj', 'telefone', 'endereco', 'imagem']
 
     def create(self, validated_data):
         conta_data = validated_data.pop('conta')
@@ -71,3 +71,17 @@ class PetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pets
         fields = '__all__'
+
+class ongUpdateImageSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = Ong
+        fields = ['id','imagem']
+
+class petUpdateImageSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(write_only=True)
+    
+    class Meta:
+        model = Pets
+        fields = ['id','imagem']
