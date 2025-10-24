@@ -279,7 +279,61 @@ imagem: [novo_arquivo.jpg]
 
 ---
 
-### 7. Login
+### 7. Retornar pets compatíveis pela IA
+- **Rota:** `/server/get_compatible_pets`  
+- **Método:** `POST`  
+- **Descrição:** Utiliza o modelo de IA para identificar e retornar os pets mais compatíveis com um adotante, com base no vetor de características do adotante e dos pets cadastrados.  
+- **Requisitos:** O modelo de compatibilidade (`compatibility_model_final_weights.pth`) deve estar carregado corretamente no servidor.
+
+#### Request:
+```json
+{
+  "adotante_id": "uuid-do-adotante"
+}
+```
+
+#### Response (200 OK):
+
+```json
+{
+  "adotante_id": "uuid-do-adotante",
+  "total_pets_compatíveis": 2,
+  "pets": [
+    {
+      "id": "uuid-do-pet-1",
+      "ong_id": "uuid-da-ong",
+      "adotante_id": null,
+      "nome": "Rex",
+      "idade": 3,
+      "descricao": "Cachorro dócil e brincalhão",
+      "disponivel": true,
+      "vetor_caracteristicas": [1, 3, 5, 1, 2, 0, 1],
+      "imagem": "/media/pet/uuid-do-pet-1/imagem_pet.jpg"
+    },
+    {
+      "id": "uuid-do-pet-2",
+      "ong_id": "uuid-da-ong",
+      "adotante_id": null,
+      "nome": "Luna",
+      "idade": 2,
+      "descricao": "Gata calma e carinhosa",
+      "disponivel": true,
+      "vetor_caracteristicas": [0, 4, 2, 1, 1, 0, 0],
+      "imagem": "/media/pet/uuid-do-pet-2/imagem_pet.jpg"
+    }
+  ]
+}
+```
+
+#### Possíveis erros:
+- **400 Bad Request:** Dados ausentes, inválidos ou com formato incorreto.
+- **401 Unauthorized:** Token de autenticação ausente ou inválido.
+- **403 Forbidden:** Usuário sem permissão para realizar esta ação.
+- **500 Internal Server Error:** Erro interno no servidor.
+
+---
+
+### 8. Login
 - **Rota:** `/server/login`
 - **Método:** `POST`
 - **Descrição:** Autentica uma conta (ONG ou adotante).
@@ -335,7 +389,7 @@ imagem: [novo_arquivo.jpg]
 
 ---
 
-### 8. Health Check
+### 9. Health Check
 - **Rota:** `/server/health`
 - **Método:** `GET`
 - **Descrição:** Verifica se o servidor está online.
