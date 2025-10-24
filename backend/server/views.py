@@ -4,6 +4,12 @@ from rest_framework import status
 from .serializers import OngSerializer, AdotanteSerializer, LoginSerializer, AccountOutputSerializer, OngUpdateSerializer, AdopterUpdateSerializer, PetUpdateSerializer, PetSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Conta, Ong, Pets, Adotante
+from .AI.compatibility_model import CompatibilityModel, predict_and_rank_pets, ADOPTER_FEATURES, PET_FEATURES
+import torch, os
+from pathlib import Path
+
+APP_DIR = Path(__file__).resolve().parent
+MODEL_PATH = APP_DIR / "AI" / "compatibility_model_final_weights.pth"
 
 @api_view(['POST'])
 def register_ong(req):
@@ -97,7 +103,7 @@ def register_pet(req):
     data = dict(req.data)
 
     if not data.get('vetor_caracteristicas'):
-        data['vetor_caracteristicas'] = [1, 1, 1, 1, 2, 2]
+        data['vetor_caracteristicas'] = [1,5,0,0,1,1,1]
 
     for key, value in data.items():
         # Exemplo: {'nome': ['Rex']} -> 'Rex'
@@ -154,6 +160,45 @@ def login(req):
         'refresh': str(JWT_token),
         'access': str(JWT_token.access_token)
     }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def get_compatible_pets(req):
+    try:
+        adotante_id = req.data.get('adotante_id')
+        if not adotante_id:
+            return Response({'error': 'Campo "adotante_id" é obrigatório.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        adotante = Adotante.objects.get(id=adotante_id)
+
+        adopter_vector = adotante.vetor_caracteristicas
+
+        pets = Pets.objects.filter(disponivel=True)
+        pets_vectors = [pet.vetor_caracteristicas for pet in pets]
+        print(pets_vectors) # PRINT AQUI
+
+        model = CompatibilityModel(ADOPTER_FEATURES, PET_FEATURES)
+        if os.path.exists(MODEL_PATH):
+            model.load_state_dict(torch.load(MODEL_PATH))
+        else:
+            return Response({'error': 'Modelo de compatibilidade não encontrado.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        results = predict_and_rank_pets(model, adopter_vector, pets_vectors)
+        ranked_safe_pets = results.get('ranked_safe_pets', [])
+
+        safe_pet_ids = []
+        for pet_result in ranked_safe_pets:
+            index = pet_result['pet_id'] - 1
+            if 0 <= index < len(pets):
+                safe_pet_ids.append(pets[index].id)
+        ranked_pets = Pets.objects.filter(id__in=safe_pet_ids)
+        serialized = PetSerializer(ranked_pets, many=True)
+
+        return Response({'adotante_id': adotante_id, 'total_pets_compatíveis': len(safe_pet_ids), 'pets': serialized.data}, status=status.HTTP_200_OK)
+
+    except Adotante.DoesNotExist:
+        return Response({'error': 'Adotante não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def health_check(req):
