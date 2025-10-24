@@ -2,13 +2,13 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from uuid_extensions import uuid7
 import os
+import shutil
 
 def ong_image_path(instance, filename):
     return os.path.join('ong', str(instance.id), filename)
 
-
 def pet_image_path(instance, filename):
-    return os.path.join('pet', str(instance.id), filename)
+    return os.path.join('pet', 'temp', filename)
 
 
 class Conta(models.Model):
@@ -62,3 +62,20 @@ class Pets(models.Model):
     disponivel = models.BooleanField(default=True)
     vetor_caracteristicas = ArrayField(models.IntegerField())
     imagem = models.ImageField(upload_to=pet_image_path, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        creating = self._state.adding
+        super().save(*args, **kwargs)
+
+        # Quando o objeto for criado pela primeira vez, renomeia a imagem
+        if creating and self.imagem:
+            old_path = self.imagem.path
+            new_dir = os.path.join('media', 'pet', str(self.id))
+            os.makedirs(new_dir, exist_ok=True)
+
+            new_path = os.path.join(new_dir, os.path.basename(old_path))
+            shutil.move(old_path, new_path)
+
+            # Atualiza o caminho no model
+            self.imagem.name = os.path.relpath(new_path, 'media')
+            super().save(update_fields=['imagem'])

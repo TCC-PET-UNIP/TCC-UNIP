@@ -70,18 +70,34 @@ class NoteSerializer(serializers.ModelSerializer):
 class PetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pets
-        fields = '__all__'
+        fields = ['id', 'ong_id', 'adotante_id', 'nome', 'idade', 'descricao', 'disponivel', 'vetor_caracteristicas', 'imagem']
+        read_only_fields = ['id']
+        extra_kwargs = {
+            'adotante_id': {'required': False, 'allow_null': True}
+        }
 
-class ongUpdateImageSerializer(serializers.ModelSerializer):
+class OngUpdateSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(write_only=True)
+    endereco = AddressSerializer(source='endereco_id', required=False)
 
     class Meta:
         model = Ong
-        fields = ['id','imagem']
+        fields = ['id', 'nome_fantasia', 'cnpj', 'telefone', 'descricao', 'imagem', 'endereco']
 
-class petUpdateImageSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(write_only=True)
-    
+class PetUpdateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Pets
-        fields = ['id','imagem']
+        fields = ['id', 'nome', 'idade', 'descricao', 'disponivel', 'vetor_caracteristicas', 'imagem', 'ong_id', 'adotante_id']
+        extra_kwargs = {
+            'id': {'required': True}
+        }
+
+class AdopterUpdateSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(write_only=True)
+    endereco = AddressSerializer(source='endereco_id', required=False)
+
+    class Meta:
+        model = Adotante
+        fields = ['id', 'nome', 'idade', 'telefone', 'vetor_caracteristicas', 'endereco']
