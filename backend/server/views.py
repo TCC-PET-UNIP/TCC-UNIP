@@ -136,6 +136,18 @@ def update_pet_data(req):
 
     return Response({"message": "Dados do pet atualizados com sucesso!"}, status=status.HTTP_200_OK)
 
+@api_view(['DELETE'])
+def delete_pet(req):
+    pet_id = req.data.get('pet_id')
+    if not pet_id:
+        return Response({'error': 'Campo "pet_id" é obrigatório.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        pet = Pets.objects.get(id=pet_id)
+        pet.delete()
+        return Response({'message': 'Pet deletado com sucesso.'}, status=status.HTTP_200_OK)
+    except Pets.DoesNotExist:
+        return Response({'error': 'Pet não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 def login(req):
@@ -161,6 +173,7 @@ def login(req):
         'access': str(JWT_token.access_token)
     }, status=status.HTTP_200_OK)
 
+# Verificar seguraça com JWT depois
 @api_view(['POST'])
 def get_compatible_pets(req):
     try:
