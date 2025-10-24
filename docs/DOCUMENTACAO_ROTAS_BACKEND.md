@@ -11,7 +11,7 @@ Todos os endpoints estão sob o prefixo:
 Exemplo de rota completa:
 
 ```
-http://localhost:8000/server/rota_generica
+http://localhost:8000/server/register_ong
 ```
 
 ---
@@ -23,7 +23,7 @@ http://localhost:8000/server/rota_generica
 - **Método:** `POST`
 - **Descrição:** Cria uma conta para uma ONG no sistema.
 
-#### Request (JSON esperado):
+#### Request:
 ```json
 {
   "conta": {
@@ -76,12 +76,44 @@ http://localhost:8000/server/rota_generica
 
 ---
 
-### 2. Registrar Adotante
+### 2. Atualizar ONG
+- **Rota:** `/server/update_ong_data`
+- **Método:** `PATCH`
+- **Descrição:** Atualiza qualquer dado da ONG (nome, CNPJ, telefone, descrição, imagem ou endereço).
+
+#### Request (multipart/form-data):
+```
+id: <uuid-da-ong>
+nome_fantasia: ONG Esperança Renovada
+telefone: (11) 99999-8888
+descricao: Nova descrição
+imagem: [arquivo.jpg]
+endereco.logradouro: Rua Nova
+endereco.cidade: Jundiaí
+```
+
+#### Response (200 OK):
+```json
+{
+  "message": "Dados da ONG atualizados com sucesso!"
+}
+```
+
+#### Possíveis erros:
+- **400 Bad Request:** Dados ausentes, inválidos ou com formato incorreto.
+- **401 Unauthorized:** Token de autenticação ausente ou inválido.
+- **403 Forbidden:** Usuário sem permissão para realizar esta ação.
+- **404 Not Found:** Recurso (ONG, adotante ou pet) não encontrado.
+- **500 Internal Server Error:** Erro interno no servidor.
+
+---
+
+### 3. Registrar Adotante
 - **Rota:** `/server/register_adopter`
 - **Método:** `POST`
 - **Descrição:** Cria uma conta para um adotante.
 
-#### Request (JSON esperado):
+#### Request:
 ```json
 {
   "conta": {
@@ -142,10 +174,115 @@ http://localhost:8000/server/rota_generica
 
 ---
 
-### 3. Login
+### 4. Atualizar Adotante
+- **Rota:** `/server/update_adopter_data`
+- **Método:** `PATCH`
+- **Descrição:** Atualiza dados do adotante, inclusive endereço.
+
+#### Request:
+```json
+{
+  "id": "uuid-do-adotante",
+  "nome": "Maria S. Lima",
+  "idade": 31,
+  "telefone": "(11) 97777-7777",
+  "vetor_caracteristicas": [2, 3, 4, 5, 1],
+  "endereco": {
+    "logradouro": "Rua das Margaridas",
+    "numero": "200",
+    "bairro": "Jardins"
+  }
+}
+```
+
+#### Response (200 OK):
+```json
+{
+  "message": "Dados do adotante atualizados com sucesso!"
+}
+```
+
+#### Possíveis erros:
+- **400 Bad Request:** Dados ausentes, inválidos ou com formato incorreto.
+- **401 Unauthorized:** Token de autenticação ausente ou inválido.
+- **403 Forbidden:** Usuário sem permissão para realizar esta ação.
+- **404 Not Found:** Recurso (ONG, adotante ou pet) não encontrado.
+- **500 Internal Server Error:** Erro interno no servidor.
+
+---
+
+### 5. Registrar Pet
+- **Rota:** `/server/register_pet`
+- **Método:** `POST`
+- **Descrição:** Cria um pet vinculado a uma ONG.
+
+#### Request (multipart/form-data):
+```
+ong_id: <uuid-da-ong>
+nome: Rex
+idade: 3
+descricao: Cachorro dócil e brincalhão
+disponivel: True
+imagem: [arquivo.jpg]
+```
+
+#### Response (201 Created):
+```json
+{
+  "id": 1,
+  "ong_id": "uuid-da-ong",
+  "adotante_id": null,
+  "nome": "Rex",
+  "idade": 3,
+  "descricao": "Cachorro dócil e brincalhão",
+  "disponivel": true,
+  "vetor_caracteristicas": [1, 1, 1, 1, 2, 2],
+  "imagem": "pet/<id>/imagem_pet.jpg"
+}
+```
+
+#### Possíveis erros:
+- **400 Bad Request:** Dados ausentes, inválidos ou com formato incorreto.
+- **401 Unauthorized:** Token de autenticação ausente ou inválido.
+- **403 Forbidden:** Usuário sem permissão para realizar esta ação.
+- **404 Not Found:** Recurso (ONG, adotante ou pet) não encontrado.
+- **500 Internal Server Error:** Erro interno no servidor.
+
+---
+
+### 6. Atualizar Pet
+- **Rota:** `/server/update_pet_data`
+- **Método:** `PATCH`
+- **Descrição:** Atualiza qualquer informação do pet (nome, idade, descrição, imagem, etc.).
+
+#### Request (multipart/form-data):
+```
+id: 1
+nome: Rex atualizado
+descricao: Agora mais calmo
+imagem: [novo_arquivo.jpg]
+```
+
+#### Response (200 OK):
+```json
+{
+  "message": "Dados do pet atualizados com sucesso!"
+}
+```
+
+#### Possíveis erros:
+- **400 Bad Request:** Dados ausentes, inválidos ou com formato incorreto.
+- **401 Unauthorized:** Token de autenticação ausente ou inválido.
+- **403 Forbidden:** Usuário sem permissão para realizar esta ação.
+- **404 Not Found:** Recurso (ONG, adotante ou pet) não encontrado.
+- **500 Internal Server Error:** Erro interno no servidor.
+
+---
+
+### 7. Login
 - **Rota:** `/server/login`
 - **Método:** `POST`
-- **Descrição:** Autentica um usuário cadastrado (ONG ou adotante).
+- **Descrição:** Autentica uma conta (ONG ou adotante).
 
 #### Request:
 ```json
@@ -198,10 +335,10 @@ http://localhost:8000/server/rota_generica
 
 ---
 
-### 4. Health Check
+### 8. Health Check
 - **Rota:** `/server/health`
 - **Método:** `GET`
-- **Descrição:** Verifica se o servidor está funcionando.
+- **Descrição:** Verifica se o servidor está online.
 
 #### Request:
 ```bash
