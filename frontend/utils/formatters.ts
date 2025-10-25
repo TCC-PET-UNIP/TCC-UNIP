@@ -87,3 +87,26 @@ export const formatProperName = (text: string): string => {
 export const formatEmail = (text: string): string => {
   return text.trim().toLowerCase();
 };
+
+/**
+ * Converte vetor de características numéricas para textos legíveis.
+ * Mantido aqui para evitar dependência de dados mockados.
+ */
+export const getCaracteristicasTexto = (vetor: number[] = []): string[] => {
+  const caracteristicasMap: { [key: number]: string } = {
+    1: "Calmo",
+    2: "Carinhoso",
+    3: "Obediente",
+    4: "Brincalhão",
+    5: "Protetor",
+    6: "Independente",
+    7: "Sociável",
+    8: "Energético",
+    9: "Dócil",
+    10: "Inteligente",
+  };
+
+  return (vetor || []).map(
+    (num) => caracteristicasMap[num] || "Característica"
+  );
+};

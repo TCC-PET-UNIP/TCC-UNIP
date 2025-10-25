@@ -9,8 +9,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import authService from "../services/authService";
+import API_CONFIG, { clearAuthData } from "../services/apiConfig";
 import BottomNavigation from "../components/BottomNavigation";
 import { UserProfile } from "../types/types";
 
@@ -55,7 +55,7 @@ export default function Settings() {
           style: "destructive",
           onPress: async () => {
             try {
-              await AsyncStorage.clear();
+              await clearAuthData();
               router.replace("/login");
             } catch (error) {
               console.error("Erro ao fazer logout:", error);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import API_CONFIG, { getAuthData } from "../services/apiConfig";
 import "../styles/global.css";
 import Login from "../Screens/Login";
 
@@ -12,12 +12,9 @@ export default function App() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const json = await AsyncStorage.getItem("user");
-        if (json) {
-          router.replace("/home");
-        } else {
-          router.replace("/login");
-        }
+        const { access } = await getAuthData();
+        if (access) router.replace("/home");
+        else router.replace("/login");
       } catch {
         router.replace("/login");
       } finally {

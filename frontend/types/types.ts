@@ -1,13 +1,13 @@
 // Tipos globais da aplicação
 
 export interface Endereco {
-  id: string; // uuid
+  id?: string; // uuid (opcional para update)
   logradouro: string;
-  numero: string; // varchar(10)
+  numero: string;
   bairro: string;
   cidade: string;
-  uf: string; // char(2)
-  cep: string; // char(8)
+  uf: string;
+  cep: string;
 }
 
 export interface Conta {
@@ -73,12 +73,15 @@ export interface UserProfile {
   email: string;
   tipo: "ONG" | "ADOTANTE";
   data_cadastro: Date;
-  nome?: string; // Para adotante
-  nome_fantasia?: string; // Para ONG
-  cnpj?: string; // Para ONG
-  idade?: number; // Para adotante
+  nome?: string; // Adotante
+  nome_fantasia?: string; // ONG
+  cnpj?: string; // ONG
+  descricao?: string; // ONG
+  idade?: number; // Adotante
   telefone: string;
   endereco: Endereco;
+  vetor_caracteristicas?: number[]; // Adotante
+  // imagem?: any; // ONG (enviado via multipart)
 }
 
 export interface Adotante {

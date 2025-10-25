@@ -9,10 +9,11 @@ import {
   RefreshControl,
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import authService from "../services/authService";
-import { getCaracteristicasTexto } from "../mockData/mockPets";
+import API_CONFIG, { clearAuthData, getAuthData } from "../services/apiConfig";
+import { getCaracteristicasTexto } from "../utils/formatters";
 import { Pet } from "../types/types";
+import axios from "axios";
 import BottomNavigation from "../components/BottomNavigation";
 
 export default function Home() {
@@ -24,6 +25,11 @@ export default function Home() {
   useEffect(() => {
     checkAuthAndLoadProfile();
   }, []);
+
+  useEffect(() => {
+    // load pets when profile is ready
+    if (userProfile) loadPets();
+  }, [userProfile]);
 
   const checkAuthAndLoadProfile = async () => {
     try {
@@ -49,7 +55,7 @@ export default function Home() {
 
   const goToLogin = async () => {
     try {
-      await AsyncStorage.clear();
+      await clearAuthData();
     } catch (err) {
       console.warn("Erro limpando AsyncStorage:", err);
     }
@@ -58,12 +64,31 @@ export default function Home() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // TODO: Buscar pets do backend
-    setTimeout(() => {
-      // Por enquanto, apenas reseta o estado de refreshing
+    // Recarrega lista de pets
+    (async () => {
+      await loadPets();
       setRefreshing(false);
-    }, 1000);
+    })();
   }, []);
+
+  const loadPets = async () => {
+    try {
+      const auth = await getAuthData();
+      const access = auth.access;
+
+      // usa a rota /server/pets conforme solicitado
+      const url = `${API_CONFIG.BASE_URL}/pets`;
+      const resp = await axios.get(url, {
+        headers: { Authorization: access ? `Bearer ${access}` : undefined },
+      });
+
+      const data = resp.data;
+      setPets(data.pets || data || []);
+    } catch (e) {
+      console.error("Erro ao carregar pets na Home:", e);
+      setPets([]);
+    }
+  };
 
   const handleVerMais = (petId: number) => {
     router.push(`/pet-details/${petId}` as any);

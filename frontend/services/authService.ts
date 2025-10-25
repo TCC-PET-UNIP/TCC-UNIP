@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   LoginRequest,
   LoginResponse,
@@ -14,9 +13,13 @@ import {
   isValidPhone,
   isValidUF,
   isValidAddress,
-  isNotEmpty,
 } from "../utils/validators";
-import API_CONFIG, { apiRequest } from "./apiConfig";
+import axios from "axios";
+import API_CONFIG, {
+  saveAuthData,
+  clearAuthData,
+  getAuthData,
+} from "./apiConfig";
 
 class AuthService {
   // Login com integração ao backend
@@ -45,15 +48,13 @@ class AuthService {
       }
 
       // Fazer requisição ao backend
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.LOGIN, {
-        method: "POST",
-        body: JSON.stringify({
-          email: credentials.email,
-          senha: credentials.senha,
-        }),
-        // Não enviar header Authorization em rotas públicas
-        omitAuth: true,
-      });
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`,
+        { email: credentials.email, senha: credentials.senha },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      const response = resp.data;
 
       // Processar resposta do backend
       const { user, access, refresh } = response;
@@ -61,10 +62,8 @@ class AuthService {
       // Determinar tipo de usuário e construir perfil
       const userProfile: UserProfile = this.buildUserProfile(user);
 
-      // Salvar dados no AsyncStorage
-      await AsyncStorage.setItem("userToken", access);
-      await AsyncStorage.setItem("refreshToken", refresh);
-      await AsyncStorage.setItem("userProfile", JSON.stringify(userProfile));
+      // Salvar dados no AsyncStorage (centralizado)
+      await saveAuthData(access, refresh, userProfile);
 
       return {
         success: true,
@@ -117,12 +116,12 @@ class AuthService {
       };
 
       // Fazer requisição ao backend
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.REGISTER_ADOPTER, {
-        method: "POST",
-        body: JSON.stringify(requestData),
-        // Não enviar header Authorization em rotas públicas
-        omitAuth: true,
-      });
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ADOPTER}`,
+        requestData,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const response = resp.data;
 
       // Processar resposta
       const { user, access, refresh } = response;
@@ -131,10 +130,8 @@ class AuthService {
         ong: null,
       });
 
-      // Salvar dados
-      await AsyncStorage.setItem("userToken", access);
-      await AsyncStorage.setItem("refreshToken", refresh);
-      await AsyncStorage.setItem("userProfile", JSON.stringify(userProfile));
+      // Salvar dados (centralizado)
+      await saveAuthData(access, refresh, userProfile);
 
       return {
         success: true,
@@ -192,12 +189,12 @@ class AuthService {
       };
 
       // Fazer requisição ao backend
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.REGISTER_ONG, {
-        method: "POST",
-        body: JSON.stringify(requestData),
-        // Não enviar header Authorization em rotas públicas
-        omitAuth: true,
-      });
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ONG}`,
+        requestData,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const response = resp.data;
 
       // Processar resposta
       const { user, access, refresh } = response;
@@ -206,10 +203,8 @@ class AuthService {
         adotante: null,
       });
 
-      // Salvar dados
-      await AsyncStorage.setItem("userToken", access);
-      await AsyncStorage.setItem("refreshToken", refresh);
-      await AsyncStorage.setItem("userProfile", JSON.stringify(userProfile));
+      // Salvar dados (centralizado)
+      await saveAuthData(access, refresh, userProfile);
 
       return {
         success: true,
@@ -276,18 +271,14 @@ class AuthService {
 
   // Logout
   async logout(): Promise<void> {
-    await AsyncStorage.multiRemove([
-      "userToken",
-      "refreshToken",
-      "userProfile",
-    ]);
+    await clearAuthData();
   }
 
   // Verificar se usuário está logado
   async isLoggedIn(): Promise<boolean> {
     try {
-      const token = await AsyncStorage.getItem("userToken");
-      return !!token;
+      const { access } = await getAuthData();
+      return !!access;
     } catch {
       return false;
     }
@@ -296,8 +287,8 @@ class AuthService {
   // Obter perfil do usuário
   async getUserProfile(): Promise<UserProfile | null> {
     try {
-      const profileData = await AsyncStorage.getItem("userProfile");
-      return profileData ? JSON.parse(profileData) : null;
+      const { userProfile } = await getAuthData();
+      return userProfile;
     } catch {
       return null;
     }
@@ -306,21 +297,103 @@ class AuthService {
   // Atualizar perfil do usuário
   async updateProfile(updatedProfile: UserProfile): Promise<void> {
     try {
-      // Por enquanto, apenas atualizar no AsyncStorage
-      // TODO: Implementar rota de atualização no backend
-      await AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
-    } catch (error) {
-      throw new Error("Erro ao atualizar perfil");
+      // Envia a atualização para o backend conforme o tipo de usuário
+      const { access, refresh } = await getAuthData();
+      const token = access;
+
+      if (!token) throw new Error("Usuário não autenticado");
+
+      if (updatedProfile.tipo === "ONG") {
+        // Backend espera multipart/form-data para atualizar ONG (pode incluir imagem)
+        const form = new FormData();
+        // id da ong (uuid)
+        form.append("id", updatedProfile.id);
+
+        if ((updatedProfile as any).nome_fantasia)
+          form.append("nome_fantasia", (updatedProfile as any).nome_fantasia);
+        if ((updatedProfile as any).cnpj)
+          form.append("cnpj", (updatedProfile as any).cnpj);
+        if ((updatedProfile as any).telefone)
+          form.append("telefone", (updatedProfile as any).telefone);
+        if ((updatedProfile as any).descricao)
+          form.append("descricao", (updatedProfile as any).descricao);
+
+        // Endereço — backend usa keys como endereco.logradouro etc.
+        if (updatedProfile.endereco) {
+          const e: any = updatedProfile.endereco;
+          if (e.logradouro) form.append("endereco.logradouro", e.logradouro);
+          if (e.numero) form.append("endereco.numero", e.numero);
+          if (e.bairro) form.append("endereco.bairro", e.bairro);
+          if (e.cidade) form.append("endereco.cidade", e.cidade);
+          if (e.uf) form.append("endereco.uf", e.uf);
+          if (e.cep) form.append("endereco.cep", e.cep);
+        }
+
+        // Possível imagem: aceitar vários nomes de campo usados na UI
+        const possibleImage =
+          (updatedProfile as any).profileImage ||
+          (updatedProfile as any).foto_file ||
+          (updatedProfile as any).imagem ||
+          (updatedProfile as any).ong_foto;
+        if (possibleImage && (possibleImage as any).uri) {
+          const img: any = possibleImage;
+          const uri = img.uri;
+          const name = img.name || `photo_${Date.now()}.jpg`;
+          const type = img.type || "image/jpeg";
+          // campo 'imagem' conforme documentação de register/update
+          form.append("imagem", { uri, name, type } as any);
+        }
+
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPDATE_ONG}`;
+        await axios.patch(url, form as any, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      } else {
+        // ADOTANTE: enviar JSON contendo id e campos editados
+        const payload: any = { id: updatedProfile.id };
+        if ((updatedProfile as any).nome)
+          payload.nome = (updatedProfile as any).nome;
+        if ((updatedProfile as any).idade !== undefined)
+          payload.idade = (updatedProfile as any).idade;
+        if ((updatedProfile as any).telefone)
+          payload.telefone = (updatedProfile as any).telefone;
+        if ((updatedProfile as any).email)
+          payload.email = (updatedProfile as any).email;
+        if (updatedProfile.endereco) payload.endereco = updatedProfile.endereco;
+
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPDATE_ADOPTER}`;
+        await axios.patch(url, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      }
+
+      // Se a requisição ocorreu sem erros, atualiza o perfil localmente
+      await saveAuthData(access || "", refresh || "", updatedProfile);
+    } catch (error: any) {
+      console.error("Erro ao atualizar perfil no backend:", error);
+      // repassa mensagem do backend quando disponível
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Erro ao atualizar perfil";
+      throw new Error(msg);
     }
   }
 
   // Verificar saúde do backend
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.HEALTH, {
-        method: "GET",
-      });
-      return response.status === "ok";
+      const resp = await axios.get(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.HEALTH}`,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      return resp.data?.status === "ok";
     } catch {
       return false;
     }

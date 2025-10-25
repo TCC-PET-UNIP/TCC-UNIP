@@ -4,7 +4,7 @@
     "slug": "tcc-unip",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/petlar_logo.png",
     "scheme": "tcc-unip",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/petlar_logo.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.diego1012.tccunip",
@@ -33,7 +33,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/petlar_logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#B87B56"

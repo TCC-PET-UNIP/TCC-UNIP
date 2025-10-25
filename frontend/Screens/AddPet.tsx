@@ -16,6 +16,8 @@ import Feather from "@expo/vector-icons/Feather";
 import ImagePickerHelper from "../utils/imagePicker";
 import authService from "../services/authService";
 import { UserProfile } from "../types/types";
+import axios from "axios";
+import API_CONFIG, { getAuthData } from "../services/apiConfig";
 import BottomNavigation from "../components/BottomNavigation";
 import { isNotEmpty } from "../utils/validators";
 
@@ -117,11 +119,45 @@ export default function AddPet() {
     setLoading(true);
 
     try {
-      // Simular delay de rede
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Build form data to send to backend
+      const auth = await getAuthData();
+      const access = auth.access;
+      const profile = auth.userProfile || userProfile;
 
-      // Por enquanto, apenas exibir sucesso
-      // Em produção, isso faria uma chamada à API
+      const formData = new FormData();
+      formData.append("nome", nome);
+      formData.append("idade", String(idadeNum));
+      formData.append("raca", raca);
+      formData.append("peso", peso);
+      formData.append("sexo", sexo);
+      formData.append("descricao", descricao);
+      formData.append("vacinado", vacinado ? "true" : "false");
+      formData.append("castrado", castrado ? "true" : "false");
+
+      // include ong id if backend expects it
+      if (profile && profile.id) {
+        formData.append("ong_id", String(profile.id));
+      }
+
+      if (foto && (foto as any).uri) {
+        const localUri = (foto as any).uri;
+        const filename = localUri.split("/").pop() || `photo_${Date.now()}.jpg`;
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image`;
+        // @ts-ignore
+        formData.append("foto", { uri: localUri, name: filename, type });
+      }
+
+      const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_PET}`;
+
+      const resp = await axios.post(url, formData as any, {
+        headers: {
+          Authorization: access ? `Bearer ${access}` : undefined,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // If backend returns the created pet, you could navigate to details or update lists
       Alert.alert("Sucesso", `Pet ${nome} cadastrado com sucesso!`, [
         {
           text: "OK",
@@ -136,6 +172,8 @@ export default function AddPet() {
             setCastrado(false);
             setFoto(null);
             setSexo("Macho");
+            // opcional: navegar para lista de pets
+            router.back();
           },
         },
       ]);

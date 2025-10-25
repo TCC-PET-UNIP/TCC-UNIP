@@ -18,6 +18,8 @@ import Feather from "@expo/vector-icons/Feather";
 import ImagePickerHelper from "../utils/imagePicker";
 import authService from "../services/authService";
 import { UserProfile, Pet } from "../types/types";
+import axios from "axios";
+import API_CONFIG, { getAuthData } from "../services/apiConfig";
 import BottomNavigation from "../components/BottomNavigation";
 import { isNotEmpty } from "../utils/validators";
 
@@ -74,12 +76,32 @@ export default function ManagePets() {
     try {
       setLoading(true);
 
-      // TODO: Buscar pets da ONG do backend
-      // const response = await apiRequest(`/pets?ong_id=${userProfile.id}`);
-      // setPets(response.pets);
+      // Buscar pets da ONG no backend
+      const auth = await getAuthData();
+      const access = auth.access;
+      const profile = auth.userProfile || userProfile;
 
-      // Por enquanto, lista vazia (sem dados mockados)
-      setPets([]);
+      if (!profile || !profile.id) {
+        setPets([]);
+        return;
+      }
+
+      const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}?ong_id=${profile.id}`;
+      try {
+        const resp = await axios.get(url, {
+          headers: {
+            Authorization: access ? `Bearer ${access}` : undefined,
+          },
+        });
+
+        // backend may return { pets: [...] } or directly an array
+        const data = resp.data;
+        setPets(data.pets || data || []);
+      } catch (e) {
+        console.error("Erro ao buscar pets no backend:", e);
+        // keep empty list if fetch fails
+        setPets([]);
+      }
     } catch (error) {
       console.error("Erro ao carregar pets:", error);
       Alert.alert("Erro", "Não foi possível carregar os pets.");
@@ -168,29 +190,70 @@ export default function ManagePets() {
     setSavingEdit(true);
 
     try {
-      // Simular delay de rede
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const auth = await getAuthData();
+      const access = auth.access;
 
-      // Atualizar o pet na lista mockada
-      const updatedPets = pets.map((pet) =>
-        pet.id === editingPet.id
-          ? {
-              ...pet,
-              nome: editNome,
-              idade: idadeNum,
-              raca: editRaca,
-              peso: editPeso,
-              sexo: editSexo,
-              descricao: editDescricao,
-              vacinado: editVacinado,
-              castrado: editCastrado,
-              status: editStatus,
-              foto: editFoto,
-            }
-          : pet
-      );
+      // Build form data for update (supports image upload)
+      const formData = new FormData();
+      formData.append("id", String(editingPet.id));
+      formData.append("nome", editNome);
+      formData.append("idade", String(idadeNum));
+      formData.append("raca", editRaca);
+      formData.append("peso", editPeso);
+      formData.append("sexo", editSexo);
+      formData.append("descricao", editDescricao);
+      formData.append("vacinado", editVacinado ? "true" : "false");
+      formData.append("castrado", editCastrado ? "true" : "false");
+      formData.append("status", editStatus);
 
-      setPets(updatedPets);
+      // If photo is a picked image object with uri, attach it
+      if (editFoto && (editFoto as any).uri) {
+        const localUri = (editFoto as any).uri;
+        const filename = localUri.split("/").pop() || `photo_${Date.now()}.jpg`;
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image`;
+        // @ts-ignore - React Native FormData file
+        formData.append("foto", { uri: localUri, name: filename, type });
+      }
+
+      const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPDATE_PET}`;
+
+      const resp = await axios.patch(url, formData as any, {
+        headers: {
+          Authorization: access ? `Bearer ${access}` : undefined,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Update local list with server response if provided
+      const updated = resp.data?.pet || resp.data || null;
+      if (updated) {
+        const updatedPets = pets.map((p) =>
+          p.id === updated.id ? updated : p
+        );
+        setPets(updatedPets);
+      } else {
+        // fallback: update locally
+        const updatedPets = pets.map((pet) =>
+          pet.id === editingPet.id
+            ? {
+                ...pet,
+                nome: editNome,
+                idade: idadeNum,
+                raca: editRaca,
+                peso: editPeso,
+                sexo: editSexo,
+                descricao: editDescricao,
+                vacinado: editVacinado,
+                castrado: editCastrado,
+                status: editStatus,
+                foto: editFoto,
+              }
+            : pet
+        );
+        setPets(updatedPets);
+      }
+
       setEditModalVisible(false);
       Alert.alert("Sucesso", `${editNome} foi atualizado com sucesso!`);
     } catch (error) {
@@ -216,7 +279,25 @@ export default function ManagePets() {
         text: "Remover",
         style: "destructive",
         onPress: async () => {
-          // Simular remoção
+          try {
+            const auth = await getAuthData();
+            const access = auth.access;
+            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}/${petId}`;
+            // Try server delete, if endpoint exists
+            await axios.delete(url, {
+              headers: {
+                Authorization: access ? `Bearer ${access}` : undefined,
+              },
+            });
+          } catch (e) {
+            // If server delete fails, log but continue with local removal
+            console.warn(
+              "Falha ao remover pet no servidor (ou endpoint não existe):",
+              e
+            );
+          }
+
+          // Remove locally regardless to keep UI responsive
           setPets(pets.filter((pet) => pet.id !== petId));
           Alert.alert("Sucesso", `${petName} foi removido da lista.`);
         },

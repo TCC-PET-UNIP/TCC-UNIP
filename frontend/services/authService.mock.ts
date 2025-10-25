@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   LoginRequest,
   LoginResponse,
@@ -16,7 +15,12 @@ import {
   isValidAddress,
   isNotEmpty,
 } from "../utils/validators";
-import API_CONFIG, { apiRequest } from "./apiConfig";
+import axios from "axios";
+import API_CONFIG, {
+  saveAuthData,
+  clearAuthData,
+  getAuthData,
+} from "./apiConfig";
 
 class AuthService {
   // Login com integração ao backend
@@ -45,15 +49,12 @@ class AuthService {
       }
 
       // Fazer requisição ao backend
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.LOGIN, {
-        method: "POST",
-        body: JSON.stringify({
-          email: credentials.email,
-          senha: credentials.senha,
-        }),
-        // Não enviar header Authorization em rotas públicas
-        omitAuth: true,
-      });
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`,
+        { email: credentials.email, senha: credentials.senha },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const response = resp.data;
 
       // Processar resposta do backend
       const { user, access, refresh } = response;
@@ -61,10 +62,8 @@ class AuthService {
       // Determinar tipo de usuário e construir perfil
       const userProfile: UserProfile = this.buildUserProfile(user);
 
-      // Salvar dados no AsyncStorage
-      await AsyncStorage.setItem("userToken", access);
-      await AsyncStorage.setItem("refreshToken", refresh);
-      await AsyncStorage.setItem("userProfile", JSON.stringify(userProfile));
+      // Salvar dados (centralizado)
+      await saveAuthData(access, refresh, userProfile);
 
       return {
         success: true,
@@ -117,12 +116,12 @@ class AuthService {
       };
 
       // Fazer requisição ao backend
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.REGISTER_ADOPTER, {
-        method: "POST",
-        body: JSON.stringify(requestData),
-        // Não enviar header Authorization em rotas públicas
-        omitAuth: true,
-      });
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ADOPTER}`,
+        requestData,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const response = resp.data;
 
       // Processar resposta
       const { user, access, refresh } = response;
@@ -131,10 +130,8 @@ class AuthService {
         ong: null,
       });
 
-      // Salvar dados
-      await AsyncStorage.setItem("userToken", access);
-      await AsyncStorage.setItem("refreshToken", refresh);
-      await AsyncStorage.setItem("userProfile", JSON.stringify(userProfile));
+      // Salvar dados (centralizado)
+      await saveAuthData(access, refresh, userProfile);
 
       return {
         success: true,
@@ -192,12 +189,12 @@ class AuthService {
       };
 
       // Fazer requisição ao backend
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.REGISTER_ONG, {
-        method: "POST",
-        body: JSON.stringify(requestData),
-        // Não enviar header Authorization em rotas públicas
-        omitAuth: true,
-      });
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ONG}`,
+        requestData,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const response = resp.data;
 
       // Processar resposta
       const { user, access, refresh } = response;
@@ -206,10 +203,8 @@ class AuthService {
         adotante: null,
       });
 
-      // Salvar dados
-      await AsyncStorage.setItem("userToken", access);
-      await AsyncStorage.setItem("refreshToken", refresh);
-      await AsyncStorage.setItem("userProfile", JSON.stringify(userProfile));
+      // Salvar dados (centralizado)
+      await saveAuthData(access, refresh, userProfile);
 
       return {
         success: true,
@@ -276,18 +271,14 @@ class AuthService {
 
   // Logout
   async logout(): Promise<void> {
-    await AsyncStorage.multiRemove([
-      "userToken",
-      "refreshToken",
-      "userProfile",
-    ]);
+    await clearAuthData();
   }
 
   // Verificar se usuário está logado
   async isLoggedIn(): Promise<boolean> {
     try {
-      const token = await AsyncStorage.getItem("userToken");
-      return !!token;
+      const { access } = await getAuthData();
+      return !!access;
     } catch {
       return false;
     }
@@ -296,8 +287,8 @@ class AuthService {
   // Obter perfil do usuário
   async getUserProfile(): Promise<UserProfile | null> {
     try {
-      const profileData = await AsyncStorage.getItem("userProfile");
-      return profileData ? JSON.parse(profileData) : null;
+      const { userProfile } = await getAuthData();
+      return userProfile;
     } catch {
       return null;
     }
@@ -308,7 +299,8 @@ class AuthService {
     try {
       // Por enquanto, apenas atualizar no AsyncStorage
       // TODO: Implementar rota de atualização no backend
-      await AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+      const { access, refresh } = await getAuthData();
+      await saveAuthData(access || "", refresh || "", updatedProfile);
     } catch (error) {
       throw new Error("Erro ao atualizar perfil");
     }
@@ -317,10 +309,11 @@ class AuthService {
   // Verificar saúde do backend
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.HEALTH, {
-        method: "GET",
-      });
-      return response.status === "ok";
+      const resp = await axios.get(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.HEALTH}`,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      return resp.data?.status === "ok";
     } catch {
       return false;
     }

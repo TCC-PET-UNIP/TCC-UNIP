@@ -10,11 +10,9 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import {
-  getPetById,
-  getCaracteristicasTexto,
-  mockPets,
-} from "../mockData/mockPets";
+import { getCaracteristicasTexto } from "../utils/formatters";
+import axios from "axios";
+import API_CONFIG, { getAuthData } from "../services/apiConfig";
 import { Pet } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
 import authService from "../services/authService";
@@ -33,8 +31,7 @@ export default function PetDetailsScreen() {
   useEffect(() => {
     if (id) {
       const numericId = Number(id);
-      const petData = getPetById(numericId);
-      setPet(petData || null);
+      loadPet(numericId);
     }
     loadUserProfile();
   }, [id]);
@@ -45,6 +42,43 @@ export default function PetDetailsScreen() {
       setUserProfile(profile);
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
+    }
+  };
+
+  const loadPet = async (numericId: number) => {
+    try {
+      const auth = await getAuthData();
+      const access = auth.access;
+
+      // Try detail endpoint first
+      const urlDetail = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}/${numericId}`;
+      try {
+        const resp = await axios.get(urlDetail, {
+          headers: { Authorization: access ? `Bearer ${access}` : undefined },
+        });
+        setPet(resp.data.pet || resp.data || null);
+        return;
+      } catch (e) {
+        // fallback to query by id
+      }
+
+      const urlQuery = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}?id=${numericId}`;
+      const resp2 = await axios.get(urlQuery, {
+        headers: { Authorization: access ? `Bearer ${access}` : undefined },
+      });
+      const data = resp2.data;
+      if (Array.isArray(data)) {
+        setPet(data[0] || null);
+      } else if (data.pet) {
+        setPet(data.pet);
+      } else if (Array.isArray(data.pets)) {
+        setPet(data.pets[0] || null);
+      } else {
+        setPet(null);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar pet:", error);
+      setPet(null);
     }
   };
 

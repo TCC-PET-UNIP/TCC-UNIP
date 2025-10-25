@@ -20,7 +20,8 @@ import {
 import { useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
 import ImagePickerHelper from "../utils/imagePicker";
-import authService from "../services/authService";
+import axios from "axios";
+import API_CONFIG, { getAuthData, saveAuthData } from "../services/apiConfig";
 import { UserProfile } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
 import {
@@ -81,13 +82,13 @@ export default function Profile() {
   const loadUserProfile = async () => {
     try {
       setLoading(true);
-      const isLoggedIn = await authService.isLoggedIn();
-      if (!isLoggedIn) {
+      const { access, userProfile: storedProfile } = await getAuthData();
+      if (!access) {
         router.replace("/login");
         return;
       }
 
-      const profile = await authService.getUserProfile();
+      const profile = storedProfile;
       setUserProfile(profile);
 
       if (profile) {
@@ -216,8 +217,10 @@ export default function Profile() {
       setSaving(true);
 
       // Validações básicas
-      if (!email.trim()) {
-        Alert.alert("Erro", "Email é obrigatório");
+      // Email: treat as optional for both user types when editing.
+      // If provided, validate format. If left empty, preserve existing email.
+      if (email.trim() && !isValidEmail(email)) {
+        Alert.alert("Erro", "Formato de email inválido");
         return;
       }
 
@@ -254,11 +257,7 @@ export default function Profile() {
         return;
       }
 
-      // Validar formato do email
-      if (!isValidEmail(email)) {
-        Alert.alert("Erro", "Formato de email inválido");
-        return;
-      }
+      // (email validation handled above depending on user type)
 
       // Validar idade para adotantes
       if (userProfile.tipo === "ADOTANTE" && idade) {
@@ -280,31 +279,97 @@ export default function Profile() {
         return;
       }
 
-      // Criar objeto de perfil atualizado
+      // Monta dados para envio conforme documentação
+      const { access } = await getAuthData();
+      if (!access) throw new Error("Usuário não autenticado");
+
+      if (userProfile.tipo === "ONG") {
+        // multipart/form-data para ONG (sem id)
+        const form = new FormData();
+        form.append("nome_fantasia", nomeFantasia.trim());
+        form.append("telefone", telefone.trim());
+        if ((userProfile as any).descricao)
+          form.append("descricao", (userProfile as any).descricao);
+
+        form.append("endereco.logradouro", logradouro.trim());
+        form.append("endereco.numero", numero.trim());
+        form.append("endereco.bairro", bairro.trim());
+        form.append("endereco.cidade", cidade.trim());
+        form.append("endereco.uf", uf.trim());
+        form.append("endereco.cep", cep.trim());
+
+        // Imagem (se houver)
+        if (profileImage && profileImage.uri) {
+          form.append("imagem", {
+            uri: profileImage.uri,
+            name: "profile.jpg",
+            type: "image/jpeg",
+          } as any);
+        }
+
+        await axios.patch(`${API_CONFIG.BASE_URL}/update_ong_data`, form, {
+          headers: {
+            Authorization: `Bearer ${access}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      } else {
+        // JSON para Adotante (sem id)
+        const payload = {
+          // Remover id do payload!
+          nome: nome.trim(),
+          idade: idade ? parseInt(idade) : undefined,
+          telefone: telefone.trim(),
+          vetor_caracteristicas:
+            (userProfile as any).vetor_caracteristicas || [],
+          endereco: {
+            logradouro: logradouro.trim(),
+            numero: numero.trim(),
+            bairro: bairro.trim(),
+            cidade: cidade.trim(),
+            uf: uf.trim(),
+            cep: cep.trim(),
+          },
+        };
+
+        await axios.patch(
+          `${API_CONFIG.BASE_URL}/update_adopter_data`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${access}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
+      // Persistir localmente
+      // Atualiza o perfil localmente com os dados editados
       const updatedProfile: UserProfile = {
         ...userProfile,
-        email: email.toLowerCase().trim(),
-        nome: userProfile.tipo === "ADOTANTE" ? nome.trim() : undefined,
-        nome_fantasia:
-          userProfile.tipo === "ONG" ? nomeFantasia.trim() : undefined,
-        idade:
-          userProfile.tipo === "ADOTANTE" && idade
-            ? parseInt(idade)
-            : undefined,
-        telefone: formatPhone(telefone),
+        email: email.trim() || userProfile.email,
+        nome: nome.trim(),
+        nome_fantasia: nomeFantasia.trim(),
+        cnpj: cnpj.trim(),
+        idade: idade ? parseInt(idade) : undefined,
+        telefone: telefone.trim(),
         endereco: {
-          ...userProfile.endereco,
           logradouro: logradouro.trim(),
           numero: numero.trim(),
           bairro: bairro.trim(),
           cidade: cidade.trim(),
-          uf: uf.toUpperCase().trim(),
-          cep: formatCEP(removeFormatting(cep)),
+          uf: uf.trim(),
+          cep: cep.trim(),
         },
+        // Atualiza imagem se for ONG
+        ...(userProfile.tipo === "ONG" && profileImage
+          ? { foto: profileImage.uri }
+          : {}),
       };
 
-      // Simular salvamento (substituir por chamada à API)
-      await authService.updateProfile(updatedProfile);
+      const { refresh } = await getAuthData();
+      await saveAuthData(access || "", refresh || "", updatedProfile);
 
       setUserProfile(updatedProfile);
       // Re-populate fields and refresh original snapshot so 'hasChanges' becomes false

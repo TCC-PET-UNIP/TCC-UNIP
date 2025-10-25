@@ -13,7 +13,8 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import authService from "../services/authService";
+import axios from "axios";
+import API_CONFIG, { saveAuthData } from "../services/apiConfig";
 import { RegisterAdotanteRequest, RegisterONGRequest } from "../types/types";
 import {
   formatCNPJ,
@@ -186,26 +187,49 @@ export default function Register() {
           },
         };
 
-        const response = await authService.registerAdotante(registerData);
+        try {
+          const resp = await axios.post(
+            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ADOPTER}`,
+            registerData,
+            { headers: { "Content-Type": "application/json" } }
+          );
 
-        if (response.success) {
-          Alert.alert("Sucesso", response.message, [
-            {
-              text: "OK",
-              onPress: () => router.replace("/adotante-questions"),
-            },
-          ]);
-        } else {
-          if (isEmailExistsMessage(response.message)) {
+          const { user, access, refresh } = resp.data;
+          if (access && refresh && user) {
+            const userProfile: any = {
+              id: user.id || user.adotante?.id || null,
+              email: "",
+              tipo: "ADOTANTE",
+              data_cadastro: new Date(),
+              nome: user.nome || user.adotante?.nome,
+              idade: user.idade || user.adotante?.idade,
+              telefone: user.telefone || user.adotante?.telefone,
+              endereco: user.endereco || user.adotante?.endereco || null,
+            };
+
+            await saveAuthData(access, refresh, userProfile);
+
+            Alert.alert("Sucesso", "Cadastro realizado com sucesso", [
+              {
+                text: "OK",
+                onPress: () => router.replace("/adotante-questions"),
+              },
+            ]);
+          } else {
+            Alert.alert("Erro", "Resposta inválida do servidor");
+          }
+        } catch (err: any) {
+          const msg =
+            err?.response?.data?.message ||
+            err?.message ||
+            "Erro ao realizar cadastro";
+          if (isEmailExistsMessage(msg)) {
             Alert.alert(
               "Email já cadastrado",
               "Já existe uma conta registrada com esse email. Por favor, faça login ou recupere sua senha."
             );
           } else {
-            Alert.alert(
-              "Erro",
-              response.message || "Erro ao realizar cadastro"
-            );
+            Alert.alert("Erro", msg);
           }
         }
       } else {
@@ -227,23 +251,46 @@ export default function Register() {
           },
         };
 
-        const response = await authService.registerONG(registerData);
+        try {
+          const resp = await axios.post(
+            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ONG}`,
+            registerData,
+            { headers: { "Content-Type": "application/json" } }
+          );
 
-        if (response.success) {
-          Alert.alert("Sucesso", response.message, [
-            { text: "OK", onPress: () => router.replace("/home") },
-          ]);
-        } else {
-          if (isEmailExistsMessage(response.message)) {
+          const { user, access, refresh } = resp.data;
+          if (access && refresh && user) {
+            const userProfile: any = {
+              id: user.id || user.ong?.id || null,
+              email: "",
+              tipo: "ONG",
+              data_cadastro: new Date(),
+              nome_fantasia: user.nome_fantasia || user.ong?.nome_fantasia,
+              cnpj: user.cnpj || user.ong?.cnpj,
+              telefone: user.telefone || user.ong?.telefone,
+              endereco: user.endereco || user.ong?.endereco || null,
+            };
+
+            await saveAuthData(access, refresh, userProfile);
+
+            Alert.alert("Sucesso", "Cadastro realizado com sucesso", [
+              { text: "OK", onPress: () => router.replace("/home") },
+            ]);
+          } else {
+            Alert.alert("Erro", "Resposta inválida do servidor");
+          }
+        } catch (err: any) {
+          const msg =
+            err?.response?.data?.message ||
+            err?.message ||
+            "Erro ao realizar cadastro";
+          if (isEmailExistsMessage(msg)) {
             Alert.alert(
               "Email já cadastrado",
               "Já existe uma conta registrada com esse email. Por favor, faça login ou recupere sua senha."
             );
           } else {
-            Alert.alert(
-              "Erro",
-              response.message || "Erro ao realizar cadastro"
-            );
+            Alert.alert("Erro", msg);
           }
         }
       }

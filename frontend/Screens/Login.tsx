@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import authService from "../services/authService";
+import axios from "axios";
+import API_CONFIG, { saveAuthData, getAuthData } from "../services/apiConfig";
 import { LoginRequest } from "../types/types";
 
 export default function Login() {
@@ -26,10 +27,8 @@ export default function Login() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const isLoggedIn = await authService.isLoggedIn();
-        if (isLoggedIn) {
-          router.replace("/home");
-        }
+        const { access: token } = await getAuthData();
+        if (token) router.replace("/home");
       } catch (err) {
         console.error("Erro ao verificar sessão: ", err);
       }
@@ -51,24 +50,63 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const loginData: LoginRequest = {
-        email: trimmedEmail,
-        senha: pwd,
-      };
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`,
+        {
+          email: trimmedEmail,
+          senha: pwd,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
-      const response = await authService.login(loginData);
+      const { user, access, refresh } = resp.data;
 
-      if (response.success && response.user) {
+      if (access && refresh && user) {
+        // build minimal userProfile similar to authService.buildUserProfile
+        let userProfile: any = null;
+        if (user.ong) {
+          userProfile = {
+            id: user.ong.id,
+            email: "",
+            tipo: "ONG",
+            data_cadastro: new Date(),
+            nome_fantasia: user.ong.nome_fantasia,
+            cnpj: user.ong.cnpj,
+            telefone: user.ong.telefone,
+            endereco: user.ong.endereco || null,
+          };
+        } else if (user.adotante) {
+          userProfile = {
+            id: user.adotante.id,
+            email: "",
+            tipo: "ADOTANTE",
+            data_cadastro: new Date(),
+            nome: user.adotante.nome,
+            idade: user.adotante.idade,
+            telefone: user.adotante.telefone,
+            endereco: user.adotante.endereco || null,
+          };
+        }
+
+        // persist tokens and profile using centralized helper
+        await saveAuthData(access, refresh, userProfile);
+
         Alert.alert(
           "Sucesso",
-          `Bem-vindo(a), ${response.user.nome || response.user.nome_fantasia || "usuário"}!`
+          `Bem-vindo(a), ${userProfile?.nome || userProfile?.nome_fantasia || "usuário"}!`
         );
         router.replace("/home");
       } else {
-        Alert.alert("Erro", response.message);
+        Alert.alert("Erro", "Resposta inválida do servidor");
       }
     } catch (err: any) {
-      Alert.alert("Erro", "Erro inesperado ao realizar login");
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Erro inesperado ao realizar login";
+      Alert.alert("Erro", msg);
       console.error("Erro no login:", err);
     } finally {
       setLoading(false);
@@ -81,22 +119,50 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Dados de usuário mockado para teste
-      const mockLoginData: LoginRequest = {
-        email: userType === "ONG" ? "teste2@email.com" : "teste@email.com",
-        senha: "123456",
-      };
+      const emailMock =
+        userType === "ONG" ? "teste2@email.com" : "teste@email.com";
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`,
+        { email: emailMock, senha: "123456" },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-      const response = await authService.login(mockLoginData);
+      const { user, access, refresh } = resp.data;
+      if (access && refresh && user) {
+        let userProfile: any = null;
+        if (user.ong) {
+          userProfile = {
+            id: user.ong.id,
+            email: "",
+            tipo: "ONG",
+            data_cadastro: new Date(),
+            nome_fantasia: user.ong.nome_fantasia,
+            cnpj: user.ong.cnpj,
+            telefone: user.ong.telefone,
+            endereco: user.ong.endereco || null,
+          };
+        } else if (user.adotante) {
+          userProfile = {
+            id: user.adotante.id,
+            email: "",
+            tipo: "ADOTANTE",
+            data_cadastro: new Date(),
+            nome: user.adotante.nome,
+            idade: user.adotante.idade,
+            telefone: user.adotante.telefone,
+            endereco: user.adotante.endereco || null,
+          };
+        }
 
-      if (response.success && response.user) {
+        await saveAuthData(access, refresh, userProfile);
+
         Alert.alert(
           "Demo Login",
-          `Login automático realizado! Bem-vindo(a), ${response.user.nome || response.user.nome_fantasia || "usuário"}!`
+          `Login automático realizado! Bem-vindo(a), ${userProfile?.nome || userProfile?.nome_fantasia || "usuário"}!`
         );
         router.replace("/home");
       } else {
-        Alert.alert("Erro", response.message);
+        Alert.alert("Erro", "Resposta inválida do servidor");
       }
     } catch (err: any) {
       Alert.alert("Erro", "Erro inesperado ao realizar login automático");

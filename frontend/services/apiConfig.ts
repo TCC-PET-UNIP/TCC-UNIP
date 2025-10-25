@@ -1,5 +1,6 @@
 // Configurações da API
 import axios, { AxiosInstance } from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Defina o IP da máquina que roda o backend aqui:
 const LOCAL_IP = "192.168.15.15"; // ajuste conforme sua rede
@@ -16,6 +17,12 @@ const API_CONFIG = {
     REGISTER_ADOPTER: "/register_adopter",
     LOGIN: "/login",
     HEALTH: "/health",
+    PETS: "/pets",
+    REGISTER_PET: "/register_pet",
+    UPDATE_PET: "/update_pet_data",
+    GET_COMPATIBLE_PETS: "/get_compatible_pets",
+    UPDATE_ONG: "/update_ong_data",
+    UPDATE_ADOPTER: "/update_adopter_data",
   },
 };
 
@@ -105,3 +112,63 @@ export const apiRequest = async (
 };
 
 export default API_CONFIG;
+
+// Storage keys and helpers to centralize token/profile persistence
+export const STORAGE_KEYS = {
+  ACCESS: "userToken",
+  REFRESH: "refreshToken",
+  PROFILE: "userProfile",
+};
+
+export const saveAuthData = async (
+  access: string,
+  refresh: string,
+  userProfile?: any
+): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.ACCESS, access);
+    await AsyncStorage.setItem(STORAGE_KEYS.REFRESH, refresh);
+    if (userProfile) {
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.PROFILE,
+        JSON.stringify(userProfile)
+      );
+    }
+  } catch (e) {
+    console.error("saveAuthData error:", e);
+    throw e;
+  }
+};
+
+export const clearAuthData = async (): Promise<void> => {
+  try {
+    await AsyncStorage.multiRemove([
+      STORAGE_KEYS.ACCESS,
+      STORAGE_KEYS.REFRESH,
+      STORAGE_KEYS.PROFILE,
+    ]);
+  } catch (e) {
+    console.error("clearAuthData error:", e);
+    throw e;
+  }
+};
+
+export const getAuthData = async (): Promise<{
+  access: string | null;
+  refresh: string | null;
+  userProfile: any | null;
+}> => {
+  try {
+    const access = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS);
+    const refresh = await AsyncStorage.getItem(STORAGE_KEYS.REFRESH);
+    const profileRaw = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE);
+    return {
+      access,
+      refresh,
+      userProfile: profileRaw ? JSON.parse(profileRaw) : null,
+    };
+  } catch (e) {
+    console.error("getAuthData error:", e);
+    return { access: null, refresh: null, userProfile: null };
+  }
+};
