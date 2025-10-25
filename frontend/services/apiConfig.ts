@@ -1,30 +1,12 @@
 // Configurações da API
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
-import { Platform } from "react-native";
-import Constants from "expo-constants";
+import axios, { AxiosInstance } from "axios";
 
-// Gera a BASE_URL dinamicamente para funcionar no Expo Go (dispositivo)
+// Defina o IP da máquina que roda o backend aqui:
+const LOCAL_IP = "192.168.15.15"; // ajuste conforme sua rede
+
 const computeBaseUrl = () => {
-  // Web usa localhost
-  if (Platform.OS === "web") return "http://localhost:8000/server";
-
-  // Tenta extrair o host do debuggerHost do Expo (ex: "192.168.1.10:19000")
-  try {
-    // @ts-ignore - manifest types variam entre SDKs
-    const manifest: any = Constants.manifest || Constants.expoConfig;
-    const debuggerHost = manifest?.debuggerHost;
-    if (debuggerHost && typeof debuggerHost === "string") {
-      const host = debuggerHost.split(":")[0];
-      return `http://${host}:8000/server`;
-    }
-  } catch (e) {
-    // ignore
-  }
-
-  // Fallbacks comuns:
-  // - Emulador Android usa 10.0.2.2 para localhost da máquina
-  // - Se nada for detectado, usar 10.0.2.2 (funciona em muitos setups de dev)
-  return "http://10.0.2.2:8000/server";
+  // Web e dispositivos usam o IP fixo
+  return `http://${LOCAL_IP}:8000/server`;
 };
 
 const API_CONFIG = {
@@ -37,7 +19,7 @@ const API_CONFIG = {
   },
 };
 
-// Criar instância axios com baseURL
+// Instância axios com baseURL
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   headers: {
@@ -84,7 +66,6 @@ export const apiRequest = async (
 ): Promise<any> => {
   const method = (options.method || "GET") as any;
 
-  // Se houver body (string JSON), transformar em objeto para axios
   let data: any = undefined;
   if (options.body) {
     try {
@@ -102,16 +83,15 @@ export const apiRequest = async (
     method,
     data,
     headers: options.headers || {},
-    // passar omitAuth para o interceptor
     omitAuth: (options as any).omitAuth,
-    // timeout opcional pode ser adicionado aqui
   };
+
+  console.log("URL da requisição:", API_CONFIG.BASE_URL + endpoint);
 
   try {
     const response = await axiosInstance.request(axiosConfig);
     return response.data;
   } catch (error: any) {
-    // Tentar extrair mensagem de erro do axios
     const resp = error?.response;
     if (resp && resp.data) {
       const errorData = resp.data;

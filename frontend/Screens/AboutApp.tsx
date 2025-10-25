@@ -63,7 +63,7 @@ export default function AboutApp() {
             <View className="items-center mb-4">
               <View className="bg-orange-100 rounded-full mb-3">
                 <Image
-                  source={require("@/assets/images/Petlar - Logo.png")}
+                  source={require("@/assets/images/petlar_logo.png")}
                   style={{ width: 84, height: 84, borderRadius: 42 }}
                   resizeMode="contain"
                 />
