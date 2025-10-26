@@ -1,7 +1,9 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework import status
 from .serializers import OngSerializer, AdotanteSerializer, LoginSerializer, AccountOutputSerializer, OngUpdateSerializer, AdopterUpdateSerializer, PetUpdateSerializer, PetSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Conta, Ong, Pets, Adotante
 from .AI.compatibility_model import CompatibilityModel, predict_and_rank_pets, ADOPTER_FEATURES, PET_FEATURES
@@ -25,8 +27,9 @@ def register_ong(req):
         'access': str(JWT_token.access_token)
     }, status=status.HTTP_201_CREATED)
 
-# Verificar seguraça com JWT depois
 @api_view(['PATCH'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_ong_data(req):
     serializer = OngUpdateSerializer(data=req.data, partial=True)
     serializer.is_valid(raise_exception=True)
@@ -68,8 +71,9 @@ def register_adopter(req):
         'access': str(JWT_token.access_token)
     }, status=status.HTTP_201_CREATED)
 
-# Verificar seguraça com JWT depois
 @api_view(['PATCH'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_adopter_data(req):
     serializer = AdopterUpdateSerializer(data=req.data, partial=True)
     serializer.is_valid(raise_exception=True)
@@ -97,8 +101,9 @@ def update_adopter_data(req):
     return Response({"message": "Dados do adotante atualizados com sucesso!"}, status=status.HTTP_200_OK)
 
 
-# Verificar seguraça com JWT depois
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def register_pet(req):
     data = dict(req.data)
 
@@ -116,8 +121,9 @@ def register_pet(req):
     
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-# Verificar seguraça com JWT depois
 @api_view(['PATCH'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_pet_data(req):
     serializer = PetUpdateSerializer(data=req.data, partial=True)
     serializer.is_valid(raise_exception=True)
@@ -137,6 +143,8 @@ def update_pet_data(req):
     return Response({"message": "Dados do pet atualizados com sucesso!"}, status=status.HTTP_200_OK)
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_pet(req):
     pet_id = req.data.get('pet_id')
     if not pet_id:
@@ -155,14 +163,14 @@ def login(req):
     serializer.is_valid(raise_exception=True) # Retorna 400 automaticamente se algum dos campos for inválido
 
     email = serializer.validated_data['email']
-    senha = serializer.validated_data['senha']
+    senha = serializer.validated_data['password']
 
     try:
         account = Conta.objects.select_related("ong__endereco_id", "adotante__endereco_id").get(email=email)
     except Conta.DoesNotExist:
         return Response({"error": "Credenciais inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    if account.senha != senha:
+    if account.password != senha:
         return Response({"error": "Credenciais inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
     JWT_token = RefreshToken.for_user(account)
@@ -173,8 +181,9 @@ def login(req):
         'access': str(JWT_token.access_token)
     }, status=status.HTTP_200_OK)
 
-# Verificar seguraça com JWT depois
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_compatible_pets(req):
     try:
         adotante_id = req.data.get('adotante_id')

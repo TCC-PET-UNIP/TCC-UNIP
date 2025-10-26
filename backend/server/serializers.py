@@ -3,12 +3,12 @@ from .models import Conta, Endereco, Ong, Adotante, Nota, Pets
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
-    senha = serializers.CharField()
+    password = serializers.CharField()
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conta
-        fields = ['id', 'email', 'senha', 'tipo']
+        fields = ['id', 'email', 'password', 'tipo']
         read_only_fields = ['tipo']
 
 class AddressSerializer(serializers.ModelSerializer):

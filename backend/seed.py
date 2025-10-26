@@ -35,7 +35,7 @@ def create_contas(tipo, qtd=3):
     print(f"👤 Criando contas do tipo {tipo}...")
     contas = []
     for i in range(qtd):
-        conta = Conta.objects.create(
+        conta = Conta.objects.create_user(
             email=f"{tipo.lower()}{i+1}@email.com",
             senha="123456",
             tipo=tipo.upper(),

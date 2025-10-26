@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from uuid_extensions import uuid7
 import os
 import shutil
@@ -11,12 +12,35 @@ def pet_image_path(instance, filename):
     return os.path.join('pet', 'temp', filename)
 
 
-class Conta(models.Model):
+class ContaManager(BaseUserManager):
+    def create_user(self, email, senha=None, **extra_fields):
+        if not email:
+            raise ValueError("O campo email é obrigatório")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(senha)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, senha=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        return self.create_user(email, senha, **extra_fields)
+
+class Conta(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
     email = models.CharField(max_length=70, unique=True)
-    senha = models.CharField(max_length=15)
     tipo = models.CharField(max_length=8, choices=[('ONG', 'ONG'), ('ADOTANTE', 'ADOTANTE')])
     data_cadastro = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+    objects = ContaManager()
+
+    def __str__(self):
+        return self.email
 
 class Endereco(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
