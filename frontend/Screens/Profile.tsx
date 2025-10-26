@@ -284,8 +284,8 @@ export default function Profile() {
       if (!access) throw new Error("Usuário não autenticado");
 
       if (userProfile.tipo === "ONG") {
-        // multipart/form-data para ONG (sem id)
         const form = new FormData();
+        form.append("id", userProfile.id); 
         form.append("nome_fantasia", nomeFantasia.trim());
         form.append("telefone", telefone.trim());
         if ((userProfile as any).descricao)
@@ -298,7 +298,6 @@ export default function Profile() {
         form.append("endereco.uf", uf.trim());
         form.append("endereco.cep", cep.trim());
 
-        // Imagem (se houver)
         if (profileImage && profileImage.uri) {
           form.append("imagem", {
             uri: profileImage.uri,
@@ -314,9 +313,9 @@ export default function Profile() {
           },
         });
       } else {
-        // JSON para Adotante (sem id)
+        // JSON para Adotante (inclui id)
         const payload = {
-          // Remover id do payload!
+          id: userProfile.id, // Inclui id do adotante
           nome: nome.trim(),
           idade: idade ? parseInt(idade) : undefined,
           telefone: telefone.trim(),
