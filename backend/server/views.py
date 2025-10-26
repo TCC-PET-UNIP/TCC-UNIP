@@ -142,6 +142,21 @@ def update_pet_data(req):
 
     return Response({"message": "Dados do pet atualizados com sucesso!"}, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_pets(req):
+    ong_id = req.data.get('ong_id')
+    if not ong_id:
+        return Response({'error': 'Campo "ong_id" é obrigatório.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        pets = Pets.objects.filter(ong_id=ong_id)
+        serialized = PetSerializer(pets, many=True)
+        return Response({'ong_id': ong_id, 'total_pets': len(pets), 'pets': serialized.data}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])

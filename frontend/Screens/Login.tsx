@@ -54,7 +54,7 @@ export default function Login() {
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`,
         {
           email: trimmedEmail,
-          senha: pwd,
+          password: pwd,
         },
         {
           headers: { "Content-Type": "application/json" },
