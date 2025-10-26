@@ -5,6 +5,7 @@ from .serializers import OngSerializer, AdotanteSerializer, LoginSerializer, Acc
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
 from .models import Conta, Ong, Pets, Adotante
 from .AI.compatibility_model import CompatibilityModel, predict_and_rank_pets, ADOPTER_FEATURES, PET_FEATURES
 import torch, os
@@ -180,18 +181,16 @@ def login(req):
     email = serializer.validated_data['email']
     senha = serializer.validated_data['password']
 
-    try:
-        account = Conta.objects.select_related("ong__endereco_id", "adotante__endereco_id").get(email=email)
-    except Conta.DoesNotExist:
+    user = authenticate(email=email, password=senha)
+
+    if user is None:
         return Response({"error": "Credenciais inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    if account.password != senha:
-        return Response({"error": "Credenciais inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
-
-    JWT_token = RefreshToken.for_user(account)
+    # Gera o token JWT
+    JWT_token = RefreshToken.for_user(user)
 
     return Response({
-        'user': AccountOutputSerializer(account).data,
+        'user': AccountOutputSerializer(user).data,
         'refresh': str(JWT_token),
         'access': str(JWT_token.access_token)
     }, status=status.HTTP_200_OK)

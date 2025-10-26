@@ -28,7 +28,7 @@ class OngSerializer(serializers.ModelSerializer):
         conta_data = validated_data.pop('conta')
         endereco_data = validated_data.pop('endereco_id')
 
-        conta = Conta.objects.create(**conta_data, tipo='ONG')
+        conta = Conta.objects.create_user(email=conta_data['email'], senha=conta_data['password'], tipo='ONG')
         endereco = Endereco.objects.create(**endereco_data)
         ong = Ong.objects.create(conta_id=conta, endereco_id=endereco, **validated_data)
 
@@ -47,7 +47,7 @@ class AdotanteSerializer(serializers.ModelSerializer):
         conta_data = validated_data.pop('conta')
         endereco_data = validated_data.pop('endereco_id')
 
-        conta = Conta.objects.create(**conta_data, tipo='ADOTANTE')
+        conta = Conta.objects.create_user(email=conta_data['email'], senha=conta_data['password'], tipo='ADOTANTE')
         endereco = Endereco.objects.create(**endereco_data)
         adotante = Adotante.objects.create(conta_id=conta, endereco_id=endereco, **validated_data)
 
