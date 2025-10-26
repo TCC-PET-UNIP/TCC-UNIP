@@ -328,10 +328,19 @@ def analyze_safety_rule_violations(model, val_loader):
 
 '''
 Formato: [Tipo Imóvel (3.0=Casa), Area Ext (1.0=Sim), Telado (1.0=Sim), Moradores (5.0), Crianças (0.0=Não), Idosos (0.0=Não), Outros Animais (1.0=Sim), Experiência (1.0=Sim), Tempo Disp (5.0=Muito), Tempo Fora (1.0=Pouco), Aceita Esp (1.0=Sim), Gastos (3.0), Exp Previa Esp (1.0=Sim)]
-Valores: [Tipo Imóvel: 1.0 = Apartamento Peq | 2.0 = Apartamento Grande | 3.0 = Casa | 4.0 = Casa com Quintal Grande | 5.0 = Chácara/Sítio, Área Ext: 1.0 = Sim | 0.0 = Não,
-    Telado: 1.0 = Sim | 0.0 = Não, Moradores: Número de moradores, Crianças: 1.0 = Sim | 0.0 = Não, Idosos: 1.0 = Sim | 0.0 = Não, Outros Animais: 1.0 = Sim | 0.0 = Não
+Valores: [
+    Tipo Imóvel: 1.0 = Apartamento Peq | 2.0 = Apartamento Grande | 3.0 = Casa | 4.0 = Casa com Quintal Grande | 5.0 = Chácara/Sítio, 
+    Área Ext: 1.0 = Sim | 0.0 = Não,
+    Telado: 1.0 = Sim | 0.0 = Não, 
+    Moradores: Número de moradores, 
+    Crianças: 1.0 = Sim | 0.0 = Não, 
+    Idosos: 1.0 = Sim | 0.0 = Não, 
+    Outros Animais: 1.0 = Sim | 0.0 = Não
     Experiência: 1.0 = Iniciante/Nenhuma | 2.0 = Pouca | 3.0 = Média | 4.0 = Experiente | 5.0 = Muito Experiente
-    Tempo Disp: 1.0 = Muito Pouco | 2.0 = Pouco | 3.0 = Moderado | 4.0 Bastante | 5.0 Muito Tempo, Tempo Fora: 1.0 = Quase Nunca | 2.0 = Poucas Horas | 3.0 = Período de Trabalho Padrão | 4.0 = Longo Período | 5.0 = Maior Parte do Dia, Aceita Esp: 1.0 = Sim | 0.0 = Não, Gastos Mensais p/ Pet: 1.0 = Baixo | 3.0 = Médio | 5.0 = Alta
+    Tempo Disp: 1.0 = Muito Pouco | 2.0 = Pouco | 3.0 = Moderado | 4.0 Bastante | 5.0 Muito Tempo, 
+    Tempo Fora: 1.0 = Quase Nunca | 2.0 = Poucas Horas | 3.0 = Período de Trabalho Padrão | 4.0 = Longo Período | 5.0 = Maior Parte do Dia, 
+    Aceita Esp: 1.0 = Sim | 0.0 = Não, 
+    Gastos Mensais p/ Pet: 1.0 = Baixo | 3.0 = Médio | 5.0 = Alta,
     Exp Prévia Esp: 1.0 = Sim | 0.0 = Não]
 '''
 new_adopter_profile = [3.0, 1.0, 1.0, 5.0, 0.0, 0.0, 1.0, 1.0, 5.0, 1.0, 1.0, 3.0, 1.0]
@@ -339,8 +348,14 @@ new_adopter_profile = [3.0, 1.0, 1.0, 5.0, 0.0, 0.0, 1.0, 1.0, 5.0, 1.0, 1.0, 3.
 
 ''' 
 Formato: [Espécie, Porte, Cuidados Especiais, Trauma, Sociável Crianças, Sociável Animais, Tutor Experiente]
-Valores: [Espécie: 1.0 = Cão | 0.0 Gato, Porte: 1.0 = Mini | 2.0 Pequeno | 3.0 Médio | 4.0 Grande | 5.0 Gigante, Cuidados especiais = 1.0 = Sim Precisa | 0.0 Não Precis
-            Trauma: 1.0 = Possuí | 0.0 = Não Possuí, Sociável Crianças: 1.0 Sim | 0.0 Não, Sociável Animais: 1.0 Sim | 0.0 Não, Tutor Experiente: 1.0 Recomendado Tutor Experiente | 0.0 Não Necessário
+Valores: [
+    Espécie: 1.0 = Cão | 0.0 Gato, 
+    Porte: 1.0 = Mini | 2.0 Pequeno | 3.0 Médio | 4.0 Grande | 5.0 Gigante, 
+    Cuidados especiais = 1.0 = Sim Precisa | 0.0 Não Precisa,
+    Trauma: 1.0 = Possuí | 0.0 = Não Possuí, 
+    Sociável Crianças: 1.0 Sim | 0.0 Não, 
+    Sociável Animais: 1.0 Sim | 0.0 Não, 
+    Tutor Experiente: 1.0 Recomendado Tutor Experiente | 0.0 Não Necessário
 '''
 potential_pets = [
     [1.0, 5.0, 0.0, 0.0, 1.0, 1.0, 1.0],  # Pet 1
