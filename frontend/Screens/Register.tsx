@@ -172,7 +172,7 @@ export default function Register() {
         const registerData: RegisterAdotanteRequest = {
           conta: {
             email: formatEmail(email),
-            senha,
+            password: senha,
           },
           nome: nome.trim(),
           idade: parseInt(idade),
@@ -236,7 +236,7 @@ export default function Register() {
         const registerData: RegisterONGRequest = {
           conta: {
             email: formatEmail(email),
-            senha,
+            password: senha,
           },
           nome_fantasia: nomeFantasia.trim(),
           cnpj: removeFormatting(cnpj),

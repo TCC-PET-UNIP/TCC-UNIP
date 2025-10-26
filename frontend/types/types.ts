@@ -13,7 +13,7 @@ export interface Endereco {
 export interface Conta {
   id: string; // uuid
   email: string;
-  senha: string;
+  password: string;
   tipo: "ONG" | "ADOTANTE"; // varchar(8)
   data_cadastro: Date;
 }
@@ -21,7 +21,7 @@ export interface Conta {
 // Interfaces para autenticação
 export interface LoginRequest {
   email: string;
-  senha: string;
+  password: string;
 }
 
 export interface LoginResponse {
@@ -35,7 +35,7 @@ export interface LoginResponse {
 export interface RegisterAdotanteRequest {
   conta: {
     email: string;
-    senha: string;
+    password: string;
   };
   nome: string;
   idade: number;
@@ -53,7 +53,7 @@ export interface RegisterAdotanteRequest {
 export interface RegisterONGRequest {
   conta: {
     email: string;
-    senha: string;
+    password: string;
   };
   nome_fantasia: string;
   cnpj: string;
