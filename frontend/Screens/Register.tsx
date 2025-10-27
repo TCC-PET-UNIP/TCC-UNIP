@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -169,6 +170,7 @@ export default function Register() {
 
     try {
       if (userType === "ADOTANTE") {
+        // Salva dados do registro em AsyncStorage e redireciona para o questionário
         const registerData: RegisterAdotanteRequest = {
           conta: {
             email: formatEmail(email),
@@ -186,51 +188,17 @@ export default function Register() {
             cep: removeFormatting(cep),
           },
         };
-
         try {
-          const resp = await axios.post(
-            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ADOPTER}`,
-            registerData,
-            { headers: { "Content-Type": "application/json" } }
+          await AsyncStorage.setItem(
+            "register_adotante_data",
+            JSON.stringify(registerData)
           );
-
-          const { user, access, refresh } = resp.data;
-          if (access && refresh && user) {
-            const userProfile: any = {
-              id: user.id || user.adotante?.id || null,
-              email: "",
-              tipo: "ADOTANTE",
-              data_cadastro: new Date(),
-              nome: user.nome || user.adotante?.nome,
-              idade: user.idade || user.adotante?.idade,
-              telefone: user.telefone || user.adotante?.telefone,
-              endereco: user.endereco || user.adotante?.endereco || null,
-            };
-
-            await saveAuthData(access, refresh, userProfile);
-
-            Alert.alert("Sucesso", "Cadastro realizado com sucesso", [
-              {
-                text: "OK",
-                onPress: () => router.replace("/adotante-questions"),
-              },
-            ]);
-          } else {
-            Alert.alert("Erro", "Resposta inválida do servidor");
-          }
-        } catch (err: any) {
-          const msg =
-            err?.response?.data?.message ||
-            err?.message ||
-            "Erro ao realizar cadastro";
-          if (isEmailExistsMessage(msg)) {
-            Alert.alert(
-              "Email já cadastrado",
-              "Já existe uma conta registrada com esse email. Por favor, faça login ou recupere sua senha."
-            );
-          } else {
-            Alert.alert("Erro", msg);
-          }
+          router.replace("/adotante-questions");
+        } catch (err) {
+          Alert.alert(
+            "Erro",
+            "Não foi possível salvar os dados do registro. Tente novamente."
+          );
         }
       } else {
         const registerData: RegisterONGRequest = {

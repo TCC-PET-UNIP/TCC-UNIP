@@ -13,11 +13,11 @@ import { router } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AdotanteQuestionario } from "../types/types";
+import axios from "axios";
 
 export default function AdotanteQuestions() {
   const [respostas, setRespostas] = useState<AdotanteQuestionario>({
     tipo_imovel: "",
-    localizacao: "",
     possui_area_externa: "",
     imovel_telado: "",
     quantidade_moradores: "",
@@ -28,6 +28,8 @@ export default function AdotanteQuestions() {
     tempo_diario_disponivel: "",
     tempo_fora_casa: "",
     aceita_necessidades_especiais: "",
+    gastos_mensais: "",
+    exp_previa_especie: "",
   });
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -82,18 +84,100 @@ export default function AdotanteQuestions() {
     }
 
     try {
-      await AsyncStorage.setItem(
-        "questionario_adotante",
-        JSON.stringify(respostas)
+      // Recupera dados do registro
+      const registerDataStr = await AsyncStorage.getItem(
+        "register_adotante_data"
       );
-      Alert.alert(
-        "Questionário Concluído",
-        "Suas respostas foram salvas com sucesso!",
-        [{ text: "OK", onPress: () => router.replace("/home") }]
+      if (!registerDataStr) {
+        Alert.alert(
+          "Erro",
+          "Dados do registro não encontrados. Volte e preencha o cadastro."
+        );
+        return;
+      }
+      const registerData = JSON.parse(registerDataStr);
+
+      // Monta o vetor de características conforme especificação do backend
+      // Os campos agora são coletados no formulário: gastos_mensais e exp_previa_especie.
+      // Map functions: options now supply numeric strings matching backend codes.
+      const toInt = (v: string, fallback = 0) => {
+        const n = parseInt(v, 10);
+        return isNaN(n) ? fallback : n;
+      };
+
+      const mapTipoImovel = (v: string) => toInt(v, 3); // 1..5
+      const mapAreaExterna = (v: string) => toInt(v, 0); // 1 or 0
+      const mapImovelTelado = (v: string) => toInt(v, 0); // 1 or 0
+      const mapQtdMoradores = (v: string) => toInt(v, 1); // integer
+      const mapBinarioSimNao = (v: string) => toInt(v, 0); // 1 or 0
+      const mapPresencaOutrosAnimais = (v: string) => toInt(v, 0); // 1 or 0
+      const mapExperiencia = (v: string) => toInt(v, 3); // 1..5
+      const mapTempoDiario = (v: string) => toInt(v, 3); // 1..5
+      const mapTempoFora = (v: string) => toInt(v, 3); // 1..5
+      const mapAceitaNecessidades = (v: string) => toInt(v, 0); // 1 or 0
+      const mapGastosMensais = (v: string) => toInt(v, 3); // 1,3,5
+      const mapExpPrevia = (v: string) => toInt(v, 0); // 1 or 0
+
+      const vetor_caracteristicas: number[] = [
+        mapTipoImovel(respostas.tipo_imovel), // 0
+        mapAreaExterna(respostas.possui_area_externa), // 1
+        mapImovelTelado(respostas.imovel_telado), // 2
+        mapQtdMoradores(respostas.quantidade_moradores), // 3
+        mapBinarioSimNao(respostas.ha_criancas), // 4
+        mapBinarioSimNao(respostas.ha_idosos), // 5
+        mapPresencaOutrosAnimais(respostas.presenca_outros_animais), // 6
+        mapExperiencia(respostas.experiencia_animais), // 7
+        mapTempoDiario(respostas.tempo_diario_disponivel), // 8
+        mapTempoFora(respostas.tempo_fora_casa), // 9
+        mapAceitaNecessidades(respostas.aceita_necessidades_especiais), // 10
+        mapGastosMensais(respostas.gastos_mensais || "medio"), // 11
+        mapExpPrevia(respostas.exp_previa_especie || "nao"), // 12
+      ];
+
+      // Junta dados de registro com o vetor no formato esperado pelo backend
+      const payload = {
+        ...registerData,
+        vetor_caracteristicas,
+      };
+
+      // LOG: vetor montado — útil para depuração/validação antes do envio
+      console.log(
+        "[AdotanteQuestions] vetor_caracteristicas:",
+        vetor_caracteristicas
       );
+
+      // Envia para o backend
+      const API_CONFIG = require("../services/apiConfig").default;
+      const { saveAuthData } = require("../services/apiConfig");
+      const resp = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ADOPTER}`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      const { user, access, refresh } = resp.data;
+      if (access && refresh && user) {
+        const userProfile = {
+          id: user.id || user.adotante?.id || null,
+          email: "",
+          tipo: "ADOTANTE",
+          data_cadastro: new Date(),
+          nome: user.nome || user.adotante?.nome,
+          idade: user.idade || user.adotante?.idade,
+          telefone: user.telefone || user.adotante?.telefone,
+          endereco: user.endereco || user.adotante?.endereco || null,
+        };
+        await saveAuthData(access, refresh, userProfile);
+        await AsyncStorage.removeItem("register_adotante_data");
+        Alert.alert("Sucesso", "Cadastro realizado com sucesso!", [
+          { text: "OK", onPress: () => router.replace("/home") },
+        ]);
+      } else {
+        Alert.alert("Erro", "Resposta inválida do servidor");
+      }
     } catch (error) {
-      console.error("Erro ao salvar questionário:", error);
-      Alert.alert("Erro", "Erro ao salvar suas respostas. Tente novamente.");
+      console.error("Erro ao cadastrar adotante:", error);
+      Alert.alert("Erro", "Erro ao cadastrar adotante. Tente novamente.");
     }
   };
 
@@ -139,22 +223,11 @@ export default function AdotanteQuestions() {
                 Tipo de imóvel:
               </Text>
               {renderSelector("tipo_imovel", [
-                { label: "Casa", value: "casa" },
-                { label: "Apartamento", value: "apartamento" },
-                { label: "Chácara/Sítio", value: "chacara/sitio" },
-                { label: "Outro", value: "outro" },
-              ])}
-            </View>
-
-            <View className="w-full mb-4">
-              <Text className="text-[#B87B56] font-bold mb-2">
-                Localização (permissão para pets):
-              </Text>
-              {renderSelector("localizacao", [
-                { label: "Sim, totalmente permitido", value: "permitido" },
-                { label: "Sim, com algumas restrições", value: "restricoes" },
-                { label: "Não tenho certeza", value: "incerto" },
-                { label: "Não é permitido", value: "nao_permitido" },
+                { label: "Apartamento (pequeno)", value: "1" },
+                { label: "Apartamento (grande)", value: "2" },
+                { label: "Casa", value: "3" },
+                { label: "Casa com quintal grande", value: "4" },
+                { label: "Chácara/Sítio", value: "5" },
               ])}
             </View>
 
@@ -163,10 +236,8 @@ export default function AdotanteQuestions() {
                 Possui área externa:
               </Text>
               {renderSelector("possui_area_externa", [
-                { label: "Sim, quintal grande", value: "quintal_grande" },
-                { label: "Sim, quintal pequeno", value: "quintal_pequeno" },
-                { label: "Sim, varanda/sacada", value: "varanda" },
-                { label: "Não possui", value: "nao_possui" },
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
               ])}
             </View>
 
@@ -175,9 +246,8 @@ export default function AdotanteQuestions() {
                 Imóvel é telado?
               </Text>
               {renderSelector("imovel_telado", [
-                { label: "Sim, totalmente telado", value: "totalmente" },
-                { label: "Parcialmente telado", value: "parcialmente" },
-                { label: "Não é telado", value: "nao_telado" },
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
               ])}
             </View>
 
@@ -186,11 +256,11 @@ export default function AdotanteQuestions() {
                 Quantidade de moradores:
               </Text>
               {renderSelector("quantidade_moradores", [
-                { label: "Moro sozinho(a)", value: "1" },
-                { label: "2 pessoas", value: "2" },
-                { label: "3 pessoas", value: "3" },
-                { label: "4 pessoas", value: "4" },
-                { label: "Mais de 4 pessoas", value: "mais_4" },
+                { label: "1", value: "1" },
+                { label: "2", value: "2" },
+                { label: "3", value: "3" },
+                { label: "4", value: "4" },
+                { label: "5 ou mais", value: "5" },
               ])}
             </View>
 
@@ -199,16 +269,16 @@ export default function AdotanteQuestions() {
                 Há crianças? (0 a 12 anos)
               </Text>
               {renderSelector("ha_criancas", [
-                { label: "Sim", value: "sim" },
-                { label: "Não", value: "nao" },
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
               ])}
             </View>
 
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">Há idosos?</Text>
               {renderSelector("ha_idosos", [
-                { label: "Sim", value: "sim" },
-                { label: "Não", value: "nao" },
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
               ])}
             </View>
 
@@ -217,10 +287,8 @@ export default function AdotanteQuestions() {
                 Presença de outros animais:
               </Text>
               {renderSelector("presenca_outros_animais", [
-                { label: "Sim, tenho cães", value: "caes" },
-                { label: "Sim, tenho gatos", value: "gatos" },
-                { label: "Sim, tenho outros animais", value: "outros" },
-                { label: "Não tenho animais", value: "nenhum" },
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
               ])}
             </View>
 
@@ -229,10 +297,11 @@ export default function AdotanteQuestions() {
                 Tem experiência com animais?
               </Text>
               {renderSelector("experiencia_animais", [
-                { label: "Muita experiência", value: "muita" },
-                { label: "Alguma experiência", value: "alguma" },
-                { label: "Pouca experiência", value: "pouca" },
-                { label: "Nenhuma experiência", value: "nenhuma" },
+                { label: "1 - Iniciante/Nenhuma", value: "1" },
+                { label: "2 - Pouca", value: "2" },
+                { label: "3 - Média", value: "3" },
+                { label: "4 - Experiente", value: "4" },
+                { label: "5 - Muito experiente", value: "5" },
               ])}
             </View>
 
@@ -241,10 +310,11 @@ export default function AdotanteQuestions() {
                 Tempo diário disponível:
               </Text>
               {renderSelector("tempo_diario_disponivel", [
-                { label: "Mais de 6 horas", value: "mais_6h" },
-                { label: "4 a 6 horas", value: "4_6h" },
-                { label: "2 a 4 horas", value: "2_4h" },
-                { label: "Menos de 2 horas", value: "menos_2h" },
+                { label: "1 - Muito pouco", value: "1" },
+                { label: "2 - Pouco", value: "2" },
+                { label: "3 - Moderado", value: "3" },
+                { label: "4 - Bastante", value: "4" },
+                { label: "5 - Muito tempo", value: "5" },
               ])}
             </View>
 
@@ -253,10 +323,11 @@ export default function AdotanteQuestions() {
                 Tempo fora de casa (trabalho/estudo):
               </Text>
               {renderSelector("tempo_fora_casa", [
-                { label: "Menos de 4 horas", value: "menos_4h" },
-                { label: "4 a 8 horas", value: "4_8h" },
-                { label: "8 a 12 horas", value: "8_12h" },
-                { label: "Mais de 12 horas", value: "mais_12h" },
+                { label: "1 - Quase nunca", value: "1" },
+                { label: "2 - Poucas horas", value: "2" },
+                { label: "3 - Período de trabalho padrão", value: "3" },
+                { label: "4 - Longo período", value: "4" },
+                { label: "5 - Maior parte do dia", value: "5" },
               ])}
             </View>
 
@@ -265,10 +336,29 @@ export default function AdotanteQuestions() {
                 Aceita animais com necessidades especiais?
               </Text>
               {renderSelector("aceita_necessidades_especiais", [
-                { label: "Sim, sem problemas", value: "sim_sem_problemas" },
-                { label: "Sim, dependendo do caso", value: "sim_dependendo" },
-                { label: "Talvez, preciso saber mais", value: "talvez" },
-                { label: "Não", value: "nao" },
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
+              ])}
+            </View>
+
+            <View className="w-full mb-4">
+              <Text className="text-[#B87B56] font-bold mb-2">
+                Gastos mensais estimados com pet
+              </Text>
+              {renderSelector("gastos_mensais", [
+                { label: "Baixo", value: "1" },
+                { label: "Médio", value: "3" },
+                { label: "Alto", value: "5" },
+              ])}
+            </View>
+
+            <View className="w-full mb-6">
+              <Text className="text-[#B87B56] font-bold mb-2">
+                Já teve experiência prévia com esta espécie?
+              </Text>
+              {renderSelector("exp_previa_especie", [
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
               ])}
             </View>
 

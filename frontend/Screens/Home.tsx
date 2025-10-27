@@ -77,7 +77,7 @@ export default function Home() {
       const access = auth.access;
 
       // usa a rota /server/pets conforme solicitado
-      const url = `${API_CONFIG.BASE_URL}/pets`;
+      const url = `${API_CONFIG.BASE_URL}/get-compatible-pets`;
       const resp = await axios.get(url, {
         headers: { Authorization: access ? `Bearer ${access}` : undefined },
       });

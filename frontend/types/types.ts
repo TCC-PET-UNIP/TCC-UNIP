@@ -127,7 +127,6 @@ export interface Pet {
 
 export interface AdotanteQuestionario {
   tipo_imovel: string;
-  localizacao: string;
   possui_area_externa: string;
   imovel_telado: string;
   quantidade_moradores: string;
@@ -138,6 +137,8 @@ export interface AdotanteQuestionario {
   tempo_diario_disponivel: string;
   tempo_fora_casa: string;
   aceita_necessidades_especiais: string;
+  gastos_mensais: string;
+  exp_previa_especie: string;
 }
 
 export interface Nota {
