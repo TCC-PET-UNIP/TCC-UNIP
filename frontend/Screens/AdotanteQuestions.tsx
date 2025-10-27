@@ -147,10 +147,9 @@ export default function AdotanteQuestions() {
       );
 
       // Envia para o backend
-      const API_CONFIG = require("../services/apiConfig").default;
-      const { saveAuthData } = require("../services/apiConfig");
+      // Faz requisição POST com o payload correto (não depende de services/apiConfig)
       const resp = await axios.post(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ADOPTER}`,
+        "http://localhost:8000/server/register_adopter",
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -167,7 +166,17 @@ export default function AdotanteQuestions() {
           telefone: user.telefone || user.adotante?.telefone,
           endereco: user.endereco || user.adotante?.endereco || null,
         };
-        await saveAuthData(access, refresh, userProfile);
+        // Salva tokens e perfil localmente sem depender de apiConfig
+        try {
+          await AsyncStorage.setItem("access_token", String(access));
+          await AsyncStorage.setItem("refresh_token", String(refresh));
+          await AsyncStorage.setItem(
+            "user_profile",
+            JSON.stringify(userProfile)
+          );
+        } catch (e) {
+          console.warn("Erro ao salvar auth no AsyncStorage:", e);
+        }
         await AsyncStorage.removeItem("register_adotante_data");
         Alert.alert("Sucesso", "Cadastro realizado com sucesso!", [
           { text: "OK", onPress: () => router.replace("/home") },

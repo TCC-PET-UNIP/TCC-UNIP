@@ -14,7 +14,6 @@ import { Link, useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
 import axios from "axios";
 import API_CONFIG, { saveAuthData, getAuthData } from "../services/apiConfig";
-import { LoginRequest } from "../types/types";
 
 export default function Login() {
   const [email, setEmail] = useState("");
