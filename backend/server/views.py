@@ -153,7 +153,7 @@ def get_pets(req):
 
     try:
         pets = Pets.objects.filter(ong_id=ong_id)
-        serialized = PetSerializer(pets, many=True)
+        serialized = PetSerializer(pets, many=True, context={'request': req})
         return Response({'ong_id': ong_id, 'total_pets': len(pets), 'pets': serialized.data}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

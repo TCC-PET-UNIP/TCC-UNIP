@@ -5,7 +5,9 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
 
+from django.conf import settings
 from server.models import Conta, Ong, Adotante, Pets, Endereco
+from django.core.files import File
 
 def reset_database():
     print("🧹 Limpando dados existentes...")
@@ -116,16 +118,22 @@ def seed_pets(ongs):
         {"nome": "Fiona", "idade": 5, "descricao": "Ano novo traumático Medo de fogos", "vetor_caracteristicas": [1.0, 3.0, 0.0, 1.0, 1.0, 0.0, 0.0], },
     ]
 
+    image_path = os.path.join(settings.BASE_DIR, "media", "pet", "default.jpg")
+
     for i, data in enumerate(pet_dados):
         ong = ongs[i % len(ongs)]
-        Pets.objects.create(
-            ong_id=ong,
-            nome=data["nome"],
-            idade=data["idade"],
-            descricao=data["descricao"],
-            disponivel=True,
-            vetor_caracteristicas=data["vetor_caracteristicas"],
-        )
+        with open(image_path, "rb") as img_file:
+            Pets.objects.create(
+                ong_id=ong,
+                nome=data["nome"],
+                idade=data["idade"],
+                descricao=data["descricao"],
+                raca="Labrador",
+                sexo=random.choice(["Macho", "Fêmea"]),
+                disponivel=True,
+                vetor_caracteristicas=data["vetor_caracteristicas"],
+                imagem=File(img_file, name="default.jpg"),
+            )
 
     print(f"✅ {len(pet_dados)} pets criados com sucesso.")
 
