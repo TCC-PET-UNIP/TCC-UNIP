@@ -319,8 +319,6 @@ export default function Profile() {
           nome: nome.trim(),
           idade: idade ? parseInt(idade) : undefined,
           telefone: telefone.trim(),
-          vetor_caracteristicas:
-            (userProfile as any).vetor_caracteristicas || [],
           endereco: {
             logradouro: logradouro.trim(),
             numero: numero.trim(),
