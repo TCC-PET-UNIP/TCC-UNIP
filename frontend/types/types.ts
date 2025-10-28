@@ -113,10 +113,11 @@ export interface Pet {
   status: string; // varchar(15)
   vetor_caracteristicas: number[];
   // Campos adicionais para a interface
-  foto?: any; // ImageSourcePropType
+  imagem?: any; // ImageSourcePropType
+  disponivel?: boolean;
   raca?: string;
   peso?: string;
-  sexo?: "Macho" | "Fêmea";
+  sexo?: "Macho" | "Femea";
   vacinado?: boolean;
   castrado?: boolean;
   ong_nome?: string;

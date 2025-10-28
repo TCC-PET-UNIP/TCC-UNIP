@@ -133,6 +133,8 @@ export default function AddPet() {
       formData.append("descricao", descricao);
       formData.append("vacinado", vacinado ? "true" : "false");
       formData.append("castrado", castrado ? "true" : "false");
+      // seguir documentação: incluir campo disponivel
+      formData.append("disponivel", "true");
 
       // include ong id if backend expects it
       if (profile && profile.id) {
@@ -145,7 +147,8 @@ export default function AddPet() {
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : `image`;
         // @ts-ignore
-        formData.append("foto", { uri: localUri, name: filename, type });
+        // chave esperada pelo backend conforme documentação: "imagem"
+        formData.append("imagem", { uri: localUri, name: filename, type });
       }
 
       const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_PET}`;
@@ -284,16 +287,6 @@ export default function AddPet() {
               placeholder="Raça do pet"
               value={raca}
               onChangeText={setRaca}
-              placeholderTextColor="#B87B56"
-              className="w-full bg-orange-50 border border-amber-300 rounded-lg px-4 py-3 mb-4 text-amber-800"
-            />
-
-            {/* Peso */}
-            <Text className="text-amber-700 font-semibold mb-2">Peso *</Text>
-            <TextInput
-              placeholder="Ex: 10kg, 5.5kg"
-              value={peso}
-              onChangeText={setPeso}
               placeholderTextColor="#B87B56"
               className="w-full bg-orange-50 border border-amber-300 rounded-lg px-4 py-3 mb-4 text-amber-800"
             />

@@ -70,7 +70,7 @@ class NoteSerializer(serializers.ModelSerializer):
 class PetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pets
-        fields = ['id', 'ong_id', 'adotante_id', 'nome', 'idade', 'descricao', 'disponivel', 'vetor_caracteristicas', 'imagem']
+        fields = ['id', 'ong_id', 'adotante_id', 'nome', 'idade', 'descricao', 'disponivel', 'vetor_caracteristicas', 'sexo', 'raca', 'imagem']
         read_only_fields = ['id']
         extra_kwargs = {
             'adotante_id': {'required': False, 'allow_null': True}

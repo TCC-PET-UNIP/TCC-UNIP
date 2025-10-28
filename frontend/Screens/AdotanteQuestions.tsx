@@ -166,16 +166,12 @@ export default function AdotanteQuestions() {
           telefone: user.telefone || user.adotante?.telefone,
           endereco: user.endereco || user.adotante?.endereco || null,
         };
-        // Salva tokens e perfil localmente sem depender de apiConfig
+        // Use a helper centralizada para persistir (mesmas chaves que getAuthData espera)
+        const { saveAuthData } = require("../services/apiConfig");
         try {
-          await AsyncStorage.setItem("access_token", String(access));
-          await AsyncStorage.setItem("refresh_token", String(refresh));
-          await AsyncStorage.setItem(
-            "user_profile",
-            JSON.stringify(userProfile)
-          );
+          await saveAuthData(access, refresh, userProfile);
         } catch (e) {
-          console.warn("Erro ao salvar auth no AsyncStorage:", e);
+          console.warn("Erro ao salvar auth via saveAuthData:", e);
         }
         await AsyncStorage.removeItem("register_adotante_data");
         Alert.alert("Sucesso", "Cadastro realizado com sucesso!", [

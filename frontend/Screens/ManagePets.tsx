@@ -22,6 +22,7 @@ import axios from "axios";
 import API_CONFIG, { getAuthData } from "../services/apiConfig";
 import BottomNavigation from "../components/BottomNavigation";
 import { isNotEmpty } from "../utils/validators";
+import { getCaracteristicasTexto } from "@/utils/formatters";
 
 export default function ManagePets() {
   const router = useRouter();
@@ -44,6 +45,21 @@ export default function ManagePets() {
   const [editStatus, setEditStatus] = useState("Disponível");
   const [editFoto, setEditFoto] = useState<any>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // helper para resolver pet.imagem (string relativa) para { uri }
+  const resolveImageSource = (petLike: any) => {
+    const img = petLike?.imagem || petLike?.foto || null;
+    if (!img) return null;
+    if (typeof img === "string") {
+      const root = API_CONFIG.BASE_URL.replace(/\/server\/?$/, "");
+      const uri =
+        img.startsWith("http") || img.startsWith("https")
+          ? img
+          : `${root}${img.startsWith("/") ? "" : "/"}${img}`;
+      return { uri };
+    }
+    return img;
+  };
 
   useEffect(() => {
     checkUserProfile();
@@ -86,13 +102,19 @@ export default function ManagePets() {
         return;
       }
 
-      const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}?ong_id=${profile.id}`;
+      // usar endpoint /get_pets via POST enviando { ong_id } no corpo (mesma abordagem do get_compatible_pets)
+      const url = `${API_CONFIG.BASE_URL}/get_pets`;
       try {
-        const resp = await axios.get(url, {
-          headers: {
-            Authorization: access ? `Bearer ${access}` : undefined,
-          },
-        });
+        const resp = await axios.post(
+          url,
+          { ong_id: profile.id },
+          {
+            headers: {
+              Authorization: access ? `Bearer ${access}` : undefined,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         // backend may return { pets: [...] } or directly an array
         const data = resp.data;
@@ -134,8 +156,9 @@ export default function ManagePets() {
     setEditDescricao(pet.descricao);
     setEditVacinado(pet.vacinado || false);
     setEditCastrado(pet.castrado || false);
-    setEditStatus(pet.status);
-    setEditFoto(pet.foto || null);
+    setEditStatus(pet.status || (pet.disponivel ? "Disponível" : "Adotado"));
+    // inicializa editFoto com { uri } quando backend retorna string em imagem
+    setEditFoto(resolveImageSource(pet) || null);
     setEditModalVisible(true);
   };
 
@@ -169,11 +192,6 @@ export default function ManagePets() {
 
     if (!isNotEmpty(editRaca)) {
       Alert.alert("Erro", "Raça do pet é obrigatória");
-      return;
-    }
-
-    if (!isNotEmpty(editPeso)) {
-      Alert.alert("Erro", "Peso do pet é obrigatório");
       return;
     }
 
@@ -282,11 +300,13 @@ export default function ManagePets() {
           try {
             const auth = await getAuthData();
             const access = auth.access;
-            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}/${petId}`;
-            // Try server delete, if endpoint exists
+            const url = `${API_CONFIG.BASE_URL}/delete_pet`;
+            // backend espera { id } (usar POST conforme padrão dos demais endpoints)
             await axios.delete(url, {
+              data: { pet_id: petId }, // corpo enviado no DELETE
               headers: {
-                Authorization: access ? `Bearer ${access}` : undefined,
+                Authorization: `Bearer ${access}`,
+                "Content-Type": "application/json",
               },
             });
           } catch (e) {
@@ -385,114 +405,129 @@ export default function ManagePets() {
           </View>
         ) : (
           <View className="px-4">
-            {pets.map((pet) => (
-              <TouchableOpacity
-                key={pet.id}
-                onPress={() => handleViewDetails(pet.id)}
-                className="bg-white rounded-2xl p-4 mb-4 shadow-sm"
-              >
-                <View className="flex-row">
-                  {/* Foto do Pet */}
-                  <View className="mr-4">
-                    {pet.foto ? (
-                      <Image
-                        source={pet.foto}
-                        className="w-24 h-24 rounded-xl"
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View className="w-24 h-24 rounded-xl bg-orange-100 items-center justify-center">
-                        <Feather name="image" size={32} color="#B87B56" />
-                      </View>
-                    )}
-                    {/* Badge de Status */}
-                    <View
-                      className={`absolute top-1 left-1 px-2 py-1 rounded ${
-                        pet.status === "Disponível"
-                          ? "bg-green-500"
-                          : "bg-gray-500"
-                      }`}
-                    >
-                      <Text className="text-white text-xs font-bold">
-                        {pet.status}
-                      </Text>
-                    </View>
-                  </View>
+            {pets.map((pet) => {
+              const available =
+                pet.disponivel !== undefined
+                  ? pet.disponivel
+                  : pet.status === "Disponível";
+              const imageSource = resolveImageSource(pet);
 
-                  {/* Informações do Pet */}
-                  <View className="flex-1">
-                    <View className="flex-row items-center justify-between mb-2">
-                      <Text className="text-lg font-bold text-amber-800 flex-1">
-                        {pet.nome}
-                      </Text>
-                      <View className="flex-row">
-                        <TouchableOpacity
-                          onPress={() => handleEditPet(pet.id)}
-                          className="p-2"
-                        >
-                          <Feather name="edit-2" size={18} color="#8DC6CE" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => handleDeletePet(pet.id, pet.nome)}
-                          className="p-2"
-                        >
-                          <Feather name="trash-2" size={18} color="#dc2626" />
-                        </TouchableOpacity>
+              return (
+                <TouchableOpacity
+                  key={String(pet.id)}
+                  onPress={() => handleViewDetails(pet.id)}
+                  className="bg-white rounded-2xl p-4 mb-4 shadow-sm"
+                >
+                  <View className="flex-row">
+                    {/* Foto do Pet */}
+                    <View className="mr-4">
+                      {imageSource ? (
+                        <Image
+                          source={imageSource}
+                          className="w-24 h-24 rounded-xl"
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View className="w-24 h-24 rounded-xl bg-orange-100 items-center justify-center">
+                          <Feather name="image" size={32} color="#B87B56" />
+                        </View>
+                      )}
+
+                      {/* Badge de Disponibilidade */}
+                      <View
+                        className="absolute top-1 left-1 px-2 py-1 rounded"
+                        style={{
+                          backgroundColor: available ? "#16a34a" : "#6b7280",
+                        }}
+                      >
+                        <Text className="text-white text-xs font-bold">
+                          {available ? "Disponível" : "Adotado"}
+                        </Text>
                       </View>
                     </View>
 
-                    <View className="flex-row items-center mb-1">
-                      <Feather name="tag" size={14} color="#B87B56" />
-                      <Text className="text-amber-700 text-sm ml-1">
-                        {pet.raca}
-                      </Text>
-                    </View>
-
-                    <View className="flex-row items-center mb-1">
-                      <Feather name="calendar" size={14} color="#B87B56" />
-                      <Text className="text-amber-700 text-sm ml-1">
-                        {pet.idade} {pet.idade === 1 ? "ano" : "anos"}
-                      </Text>
-                      <Text className="text-amber-500 mx-2">•</Text>
-                      <Text className="text-amber-700 text-sm">{pet.sexo}</Text>
-                      <Text className="text-amber-500 mx-2">•</Text>
-                      <Text className="text-amber-700 text-sm">{pet.peso}</Text>
-                    </View>
-
-                    <View className="flex-row items-center mt-2">
-                      {pet.vacinado && (
-                        <View className="flex-row items-center bg-green-50 px-2 py-1 rounded mr-2">
-                          <Feather
-                            name="check-circle"
-                            size={12}
-                            color="#16a34a"
-                          />
-                          <Text className="text-green-700 text-xs ml-1 font-semibold">
-                            Vacinado
-                          </Text>
+                    {/* Informações do Pet */}
+                    <View className="flex-1">
+                      <View className="flex-row items-center justify-between mb-2">
+                        <Text className="text-lg font-bold text-amber-800 flex-1">
+                          {pet.nome || "—"}
+                        </Text>
+                        <View className="flex-row">
+                          <TouchableOpacity
+                            onPress={() => handleEditPet(pet.id)}
+                            className="p-2"
+                          >
+                            <Feather name="edit-2" size={18} color="#8DC6CE" />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => handleDeletePet(pet.id, pet.nome)}
+                            className="p-2"
+                          >
+                            <Feather name="trash-2" size={18} color="#dc2626" />
+                          </TouchableOpacity>
                         </View>
-                      )}
-                      {pet.castrado && (
-                        <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded">
-                          <Feather
-                            name="check-circle"
-                            size={12}
-                            color="#2563eb"
-                          />
-                          <Text className="text-blue-700 text-xs ml-1 font-semibold">
-                            Castrado
-                          </Text>
-                        </View>
-                      )}
+                      </View>
+
+                      <View className="flex-row items-center mb-1">
+                        <Feather name="tag" size={14} color="#B87B56" />
+                        <Text className="text-amber-700 text-sm ml-1">
+                          {pet.raca || "—"}
+                        </Text>
+                      </View>
+
+                      <View className="flex-row items-center mb-1">
+                        <Feather name="calendar" size={14} color="#B87B56" />
+                        <Text className="text-amber-700 text-sm ml-1">
+                          {pet.idade !== undefined
+                            ? `${pet.idade} ${
+                                Number(pet.idade) === 1 ? "ano" : "anos"
+                              }`
+                            : "—"}
+                        </Text>
+                        <Text className="text-amber-500 mx-2">•</Text>
+                        <Text className="text-amber-700 text-sm">
+                          {pet.sexo || "—"}
+                        </Text>
+                      </View>
+
+                      <View className="flex-row items-center mt-2">
+                        {pet.vacinado && (
+                          <View className="flex-row items-center bg-green-50 px-2 py-1 rounded mr-2">
+                            <Feather
+                              name="check-circle"
+                              size={12}
+                              color="#16a34a"
+                            />
+                            <Text className="text-green-700 text-xs ml-1 font-semibold">
+                              Vacinado
+                            </Text>
+                          </View>
+                        )}
+                        {pet.castrado && (
+                          <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded">
+                            <Feather
+                              name="check-circle"
+                              size={12}
+                              color="#2563eb"
+                            />
+                            <Text className="text-blue-700 text-xs ml-1 font-semibold">
+                              Castrado
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
                   </View>
-                </View>
 
-                <Text className="text-amber-600 text-sm mt-3" numberOfLines={2}>
-                  {pet.descricao}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    className="text-amber-600 text-sm mt-3"
+                    numberOfLines={2}
+                  >
+                    {pet.descricao || "—"}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         )}
       </ScrollView>
@@ -612,18 +647,6 @@ export default function ManagePets() {
                   placeholder="Raça do pet"
                   value={editRaca}
                   onChangeText={setEditRaca}
-                  placeholderTextColor="#B87B56"
-                  className="w-full bg-orange-50 border border-amber-300 rounded-lg px-4 py-3 mb-4 text-amber-800"
-                />
-
-                {/* Peso */}
-                <Text className="text-amber-700 font-semibold mb-2">
-                  Peso *
-                </Text>
-                <TextInput
-                  placeholder="Ex: 10kg, 5.5kg"
-                  value={editPeso}
-                  onChangeText={setEditPeso}
                   placeholderTextColor="#B87B56"
                   className="w-full bg-orange-50 border border-amber-300 rounded-lg px-4 py-3 mb-4 text-amber-800"
                 />

@@ -83,6 +83,8 @@ class Pets(models.Model):
     nome = models.CharField(max_length=30)
     idade = models.IntegerField()
     descricao = models.TextField()
+    raca = models.CharField(null= True)
+    sexo = models.CharField(max_length=5, choices=[('Macho', 'Macho'), ('Femea', 'Femea')], null= True)
     disponivel = models.BooleanField(default=True)
     vetor_caracteristicas = ArrayField(models.IntegerField())
     imagem = models.ImageField(upload_to=pet_image_path, null=True, blank=True)

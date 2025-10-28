@@ -76,11 +76,24 @@ export default function Home() {
       const auth = await getAuthData();
       const access = auth.access;
 
-      // usa a rota /server/pets conforme solicitado
-      const url = `${API_CONFIG.BASE_URL}/get-compatible-pets`;
-      const resp = await axios.get(url, {
-        headers: { Authorization: access ? `Bearer ${access}` : undefined },
-      });
+      // usa a rota /server/get_compatible_pets conforme documentação
+      const url = `${API_CONFIG.BASE_URL}/get_compatible_pets`;
+      const adotanteId =
+        // preferir o profile carregado no estado, senão usar o profile do storage
+        (userProfile && (userProfile.id as any)) ||
+        (auth.userProfile && (auth.userProfile.id as any)) ||
+        null;
+
+      const resp = await axios.post(
+        url,
+        { adotante_id: adotanteId }, // corpo esperado pelo backend
+        {
+          headers: {
+            Authorization: access ? `Bearer ${access}` : undefined,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = resp.data;
       setPets(data.pets || data || []);
@@ -159,7 +172,7 @@ export default function Home() {
               <View key={pet.id} className="pet-card">
                 <View className="pet-image-container">
                   <Image
-                    source={pet.foto}
+                    source={pet.imagem}
                     className="pet-image"
                     resizeMode="cover"
                   />
