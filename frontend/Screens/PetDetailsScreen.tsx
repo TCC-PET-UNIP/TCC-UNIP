@@ -272,7 +272,10 @@ export default function PetDetailsScreen() {
   // Fonte de imagem da ONG (resolve string -> {uri})
   const ongImageSrc =
     resolveImageSource(ongInfo) ||
-    resolveImageSource({ imagem: pet?.ong_foto || (pet as any)?.ong_imagem || (pet as any)?.ong?.imagem });
+    resolveImageSource({
+      imagem:
+        pet?.ong_foto || (pet as any)?.ong_imagem || (pet as any)?.ong?.imagem,
+    });
 
   // Formata um objeto de endereço (ou string) para exibir no texto
   const formattedOngAddress = (() => {
@@ -281,7 +284,8 @@ export default function PetDetailsScreen() {
     if (typeof addr === "string") return addr;
     if (typeof addr === "object") {
       const parts: string[] = [];
-      if (addr.logradouro) parts.push(addr.logradouro + (addr.numero ? `, ${addr.numero}` : ""));
+      if (addr.logradouro)
+        parts.push(addr.logradouro + (addr.numero ? `, ${addr.numero}` : ""));
       if (addr.bairro) parts.push(addr.bairro);
       const cityUf = [addr.cidade, addr.uf].filter(Boolean).join(" - ");
       if (cityUf) parts.push(cityUf);
