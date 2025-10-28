@@ -106,6 +106,10 @@ export default function PetDetailsScreen() {
         const found = data.pet || data || null;
         if (found) {
           setPet(found);
+          // backend now may include the ong object inside the pet response
+          if (found.ong && typeof found.ong === "object") {
+            setOngInfo(found.ong);
+          }
           return;
         }
       } catch (e) {
@@ -268,7 +272,24 @@ export default function PetDetailsScreen() {
   // Fonte de imagem da ONG (resolve string -> {uri})
   const ongImageSrc =
     resolveImageSource(ongInfo) ||
-    resolveImageSource({ imagem: pet?.ong_foto || (pet as any)?.ong_imagem });
+    resolveImageSource({ imagem: pet?.ong_foto || (pet as any)?.ong_imagem || (pet as any)?.ong?.imagem });
+
+  // Formata um objeto de endereço (ou string) para exibir no texto
+  const formattedOngAddress = (() => {
+    const addr = ongInfo?.endereco || (pet as any)?.ong_endereco;
+    if (!addr) return null;
+    if (typeof addr === "string") return addr;
+    if (typeof addr === "object") {
+      const parts: string[] = [];
+      if (addr.logradouro) parts.push(addr.logradouro + (addr.numero ? `, ${addr.numero}` : ""));
+      if (addr.bairro) parts.push(addr.bairro);
+      const cityUf = [addr.cidade, addr.uf].filter(Boolean).join(" - ");
+      if (cityUf) parts.push(cityUf);
+      if (addr.cep) parts.push(`CEP ${addr.cep}`);
+      return parts.join(", ");
+    }
+    return String(addr);
+  })();
 
   return (
     <View className="flex-1 bg-amber-700">
@@ -469,9 +490,9 @@ export default function PetDetailsScreen() {
                     (pet as any)?.ong_nome_fantasia ||
                     "ONG Responsável"}
                 </Text>
-                {(ongInfo?.endereco || pet?.ong_endereco) && (
+                {formattedOngAddress && (
                   <Text className="text-sm text-gray-600 mb-2 leading-5">
-                    {ongInfo?.endereco || pet?.ong_endereco}
+                    {formattedOngAddress}
                   </Text>
                 )}
                 {(ongInfo?.telefone || pet?.ong_telefone) && (
