@@ -537,7 +537,7 @@ export default function Register() {
                 </View>
               ) : (
                 <Text className="btn-pethelper-text text-center">
-                  CADASTRAR
+                  PRÓXIMO
                 </Text>
               )}
             </TouchableOpacity>

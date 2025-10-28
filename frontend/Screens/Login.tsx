@@ -119,7 +119,7 @@ export default function Login() {
 
     try {
       const emailMock =
-        userType === "ONG" ? "teste@email.com" : "teste@email.com";
+        userType === "ONG" ? "teste@email.com" : "teste2@email.com";
       const resp = await axios.post(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`,
         { email: emailMock, password: "123456" },

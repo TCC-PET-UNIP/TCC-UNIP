@@ -14,6 +14,7 @@ import Feather from "@expo/vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AdotanteQuestionario } from "../types/types";
 import axios from "axios";
+import API_CONFIG, { saveAuthData } from "../services/apiConfig";
 
 export default function AdotanteQuestions() {
   const [respostas, setRespostas] = useState<AdotanteQuestionario>({
@@ -146,10 +147,9 @@ export default function AdotanteQuestions() {
         vetor_caracteristicas
       );
 
-      // Envia para o backend
-      // Faz requisição POST com o payload correto (não depende de services/apiConfig)
+      // Envia para o backend usando a mesma baseURL/headers do Login
       const resp = await axios.post(
-        "http://localhost:8000/server/register_adopter",
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER_ADOPTER}`,
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -167,7 +167,6 @@ export default function AdotanteQuestions() {
           endereco: user.endereco || user.adotante?.endereco || null,
         };
         // Use a helper centralizada para persistir (mesmas chaves que getAuthData espera)
-        const { saveAuthData } = require("../services/apiConfig");
         try {
           await saveAuthData(access, refresh, userProfile);
         } catch (e) {
@@ -184,6 +183,25 @@ export default function AdotanteQuestions() {
       console.error("Erro ao cadastrar adotante:", error);
       Alert.alert("Erro", "Erro ao cadastrar adotante. Tente novamente.");
     }
+  };
+
+  // Preenche o questionário com opções padrão para agilizar testes
+  const fillPredefinedAnswers = () => {
+    setRespostas({
+      tipo_imovel: "3", // Casa
+      possui_area_externa: "1", // Sim
+      imovel_telado: "0", // Não
+      quantidade_moradores: "3", // 3 moradores
+      ha_criancas: "0", // Não
+      ha_idosos: "0", // Não
+      presenca_outros_animais: "0", // Não
+      experiencia_animais: "3", // Média
+      tempo_diario_disponivel: "3", // Moderado
+      tempo_fora_casa: "3", // Período de trabalho padrão
+      aceita_necessidades_especiais: "0", // Não
+      gastos_mensais: "3", // Médio
+      exp_previa_especie: "1", // Sim
+    });
   };
 
   const renderSelector = (
@@ -223,6 +241,14 @@ export default function AdotanteQuestions() {
             <Text className="text-base text-[#B87B56] mb-6 text-center">
               Conte-nos sobre você e sua casa
             </Text>
+            <TouchableOpacity
+              onPress={fillPredefinedAnswers}
+              className="w-full bg-yellow-500 rounded-lg py-2 mb-4"
+            >
+              <Text className="btn-pethelper-text text-center text-sm">
+                🚀 Preencher rápido (padrão)
+              </Text>
+            </TouchableOpacity>
             <View className="w-full mb-4">
               <Text className="text-[#B87B56] font-bold mb-2">
                 Tipo de imóvel:
@@ -376,7 +402,7 @@ export default function AdotanteQuestions() {
               style={{ opacity: !isFormValid() ? 0.7 : 1 }}
             >
               <Text className="text-white text-center font-bold text-base">
-                PRÓXIMO
+                FINALIZAR CADASTRO
               </Text>
             </TouchableOpacity>
           </View>
