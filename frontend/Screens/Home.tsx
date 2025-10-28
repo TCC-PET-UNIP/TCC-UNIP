@@ -118,7 +118,18 @@ export default function Home() {
   return (
     <View className="container-pethelper">
       {/* Header - posicionado mais para cima */}
-      <View className="absolute top-4 left-0 right-0 px-4 flex-row items-center justify-between z-10">
+      <View
+        className="absolute top-4 left-0 right-0 px-4 flex-row items-center justify-between z-10"
+        style={{
+          // use the same background color as the main screen so the header blends in
+          backgroundColor: "#F8F3EC",
+          paddingVertical: 8,
+          paddingHorizontal: 16,
+          alignItems: "center",
+          justifyContent: "space-between",
+          zIndex: 1000,
+        }}
+      >
         <Text className="text-xl font-bold text-pethelper-dark">
           Pets pra você
         </Text>
@@ -135,12 +146,12 @@ export default function Home() {
             ? {
                 padding: 16,
                 paddingBottom: 120,
-                paddingTop: 88,
+                paddingTop: 76,
                 flexGrow: 1,
                 justifyContent: "center",
                 alignItems: "center",
               }
-            : { padding: 16, paddingBottom: 120, paddingTop: 88 }
+            : { padding: 16, paddingBottom: 120, paddingTop: 76 }
         }
         refreshControl={
           <RefreshControl
@@ -152,6 +163,9 @@ export default function Home() {
         }
         showsVerticalScrollIndicator={false}
       >
+        {/* spacer to ensure content starts below the absolute header */}
+        <View style={{ height: 28 }} />
+
         {pets.length === 0 ? (
           <View className="flex items-center justify-center py-16">
             <Feather name="inbox" size={64} color="#B8B8B8" />
