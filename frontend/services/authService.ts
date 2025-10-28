@@ -26,7 +26,7 @@ class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
       // Validações básicas antes de fazer a requisição
-      if (!credentials.email || !credentials.senha) {
+      if (!credentials.email || !credentials.password) {
         return {
           success: false,
           message: "Email e senha são obrigatórios",
@@ -40,7 +40,7 @@ class AuthService {
         };
       }
 
-      if (!isValidPassword(credentials.senha)) {
+      if (!isValidPassword(credentials.password)) {
         return {
           success: false,
           message: "Senha deve ter pelo menos 6 caracteres",
@@ -50,7 +50,7 @@ class AuthService {
       // Fazer requisição ao backend
       const resp = await axios.post(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`,
-        { email: credentials.email, senha: credentials.senha },
+        { email: credentials.email, senha: credentials.password },
         { headers: { "Content-Type": "application/json" } }
       );
 
@@ -99,7 +99,7 @@ class AuthService {
       const requestData = {
         conta: {
           email: data.conta.email,
-          senha: data.conta.senha,
+          senha: data.conta.password,
         },
         nome: data.nome,
         idade: data.idade.toString(),
@@ -173,7 +173,7 @@ class AuthService {
       const requestData = {
         conta: {
           email: data.conta.email,
-          senha: data.conta.senha,
+          senha: data.conta.password,
         },
         nome_fantasia: data.nome_fantasia,
         cnpj: data.cnpj,
