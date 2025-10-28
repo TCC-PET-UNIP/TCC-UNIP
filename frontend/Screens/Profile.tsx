@@ -24,12 +24,7 @@ import axios from "axios";
 import API_CONFIG, { getAuthData, saveAuthData } from "../services/apiConfig";
 import { UserProfile } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
-import {
-  isValidEmail,
-  isValidAge,
-  isValidCEP,
-  isValidUF,
-} from "../utils/validators";
+import { isValidAge, isValidCEP, isValidUF } from "../utils/validators";
 import {
   formatPhone,
   formatCEP,
@@ -51,7 +46,6 @@ export default function Profile() {
   const INPUT_READONLY = "border-gray-200 bg-gray-50";
 
   // Estados para os campos editáveis
-  const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
   const [nomeFantasia, setNomeFantasia] = useState("");
   const [cnpj, setCnpj] = useState("");
@@ -117,7 +111,6 @@ export default function Profile() {
   }, [pickFromCamera, pickFromGallery]);
 
   const populateFields = (profile: UserProfile) => {
-    setEmail(profile.email);
     setNome(profile.nome || "");
     setNomeFantasia(profile.nome_fantasia || "");
     setCnpj(profile.cnpj || "");
@@ -148,7 +141,6 @@ export default function Profile() {
 
     // store a minimal snapshot for change detection
     const snapshot = {
-      email: profile.email || "",
       nome: profile.nome || "",
       nomeFantasia: profile.nome_fantasia || "",
       cnpj: profile.cnpj || "",
@@ -175,7 +167,6 @@ export default function Profile() {
     if (!userProfile || !originalSnapshotRef.current) return false;
 
     const current = {
-      email: email || "",
       nome: nome || "",
       nomeFantasia: nomeFantasia || "",
       cnpj: cnpj || "",
@@ -194,7 +185,6 @@ export default function Profile() {
 
     return JSON.stringify(current) !== originalSnapshotRef.current;
   }, [
-    email,
     nome,
     nomeFantasia,
     cnpj,
@@ -217,12 +207,6 @@ export default function Profile() {
       setSaving(true);
 
       // Validações básicas
-      // Email: treat as optional for both user types when editing.
-      // If provided, validate format. If left empty, preserve existing email.
-      if (email.trim() && !isValidEmail(email)) {
-        Alert.alert("Erro", "Formato de email inválido");
-        return;
-      }
 
       if (userProfile.tipo === "ADOTANTE" && !nome.trim()) {
         Alert.alert("Erro", "Nome é obrigatório");
@@ -285,7 +269,7 @@ export default function Profile() {
 
       if (userProfile.tipo === "ONG") {
         const form = new FormData();
-        form.append("id", userProfile.id); 
+        form.append("id", userProfile.id);
         form.append("nome_fantasia", nomeFantasia.trim());
         form.append("telefone", telefone.trim());
         if ((userProfile as any).descricao)
@@ -345,7 +329,6 @@ export default function Profile() {
       // Atualiza o perfil localmente com os dados editados
       const updatedProfile: UserProfile = {
         ...userProfile,
-        email: email.trim() || userProfile.email,
         nome: nome.trim(),
         nome_fantasia: nomeFantasia.trim(),
         cnpj: cnpj.trim(),
@@ -565,22 +548,6 @@ export default function Profile() {
               />
             </View>
 
-            {/* Email */}
-            <View className="mb-4">
-              <Text className="text-pethelper-primary font-medium mb-2">
-                Email
-              </Text>
-              <TextInput
-                className={inputClass(isEditing)}
-                value={email}
-                onChangeText={setEmail}
-                editable={isEditing}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholder="seu@email.com"
-              />
-            </View>
-
             {/* Campos específicos por tipo */}
             {userProfile.tipo === "ADOTANTE" && (
               <View className="mb-4">
@@ -731,31 +698,6 @@ export default function Profile() {
                 )}
               </Text>
             </View>
-
-            {/* Estatísticas para ONGs */}
-            {userProfile.tipo === "ONG" && (
-              <View className="border-t border-amber-200 pt-4">
-                <Text className="text-lg font-semibold text-red-800 mb-3">
-                  Estatísticas
-                </Text>
-
-                <View className="flex-row justify-between mb-2">
-                  <View className="flex-1 items-center bg-amber-50 rounded-xl p-3 mr-2">
-                    <Text className="text-2xl font-bold text-red-800">0</Text>
-                    <Text className="text-amber-700 text-sm text-center">
-                      Pets Cadastrados
-                    </Text>
-                  </View>
-
-                  <View className="flex-1 items-center bg-amber-50 rounded-xl p-3 ml-2">
-                    <Text className="text-2xl font-bold text-red-800">0</Text>
-                    <Text className="text-amber-700 text-sm text-center">
-                      Adoções Realizadas
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
           </View>
         </View>
       </ScrollView>
