@@ -20,21 +20,63 @@ import { removeFormatting } from "../utils/formatters";
 
 export default function PetDetailsScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { id, pet: petParam } = useLocalSearchParams();
   const [pet, setPet] = useState<Pet | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [ongInfo, setOngInfo] = useState<any>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
+  // helper para resolver pet.imagem (string relativa) para { uri }
+  const resolveImageSource = (petLike: any) => {
+    const img = petLike?.imagem || petLike?.foto || null;
+    if (!img) return null;
+    if (typeof img === "string") {
+      const root = API_CONFIG.BASE_URL.replace(/\/server\/?$/, "");
+      const uri = img.startsWith("http")
+        ? img
+        : `${root}${img.startsWith("/") ? "" : "/"}${img}`;
+      return { uri };
+    }
+    return img;
+  };
+
   // Mock de múltiplas imagens para o pet (usando a mesma imagem)
-  const petImages = pet ? [pet.foto, pet.foto, pet.foto] : [];
+  const petImages = pet
+    ? [
+        resolveImageSource(pet),
+        resolveImageSource(pet),
+        resolveImageSource(pet),
+      ].filter(Boolean)
+    : [];
 
   useEffect(() => {
+    // se o parâmetro 'pet' foi passado na navegação, usa-o imediatamente
+    if (petParam) {
+      try {
+        const parsed =
+          typeof petParam === "string"
+            ? JSON.parse(decodeURIComponent(petParam as string))
+            : (petParam as any);
+        setPet(parsed as Pet);
+      } catch (e) {
+        // se parsing falhar, tenta carregar pela API abaixo
+        console.warn("Falha ao parsear pet param, irá buscar pela API", e);
+      }
+    }
+
     if (id) {
       const numericId = Number(id);
-      loadPet(numericId);
+      // se pet já foi definido via param e tem o mesmo id, evita nova requisição
+      if (!pet || pet.id !== numericId) {
+        loadPet(numericId);
+      }
     }
+
     loadUserProfile();
-  }, [id]);
+    // quando pet mudar, extrai info da ong
+    if (pet) extractOngInfoFromPet(pet);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, petParam, pet]);
 
   const loadUserProfile = async () => {
     try {
@@ -50,30 +92,45 @@ export default function PetDetailsScreen() {
       const auth = await getAuthData();
       const access = auth.access;
 
-      // Try detail endpoint first
-      const urlDetail = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}/${numericId}`;
+      // Primeiro tenta o novo endpoint POST /get_pet_by_id
       try {
-        const resp = await axios.get(urlDetail, {
-          headers: { Authorization: access ? `Bearer ${access}` : undefined },
-        });
-        setPet(resp.data.pet || resp.data || null);
-        return;
+        const url = `${API_CONFIG.BASE_URL}/get_pet_by_id`;
+        const resp = await axios.post(
+          url,
+          { pet_id: String(numericId) },
+          {
+            headers: { Authorization: access ? `Bearer ${access}` : undefined },
+          }
+        );
+        const data = resp.data;
+        const found = data.pet || data || null;
+        if (found) {
+          setPet(found);
+          return;
+        }
       } catch (e) {
-        // fallback to query by id
+        // fallback para métodos antigos caso endpoint não exista
+        console.warn("get_pet_by_id falhou, tentando rotas antigas", e);
       }
 
-      const urlQuery = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}?id=${numericId}`;
-      const resp2 = await axios.get(urlQuery, {
-        headers: { Authorization: access ? `Bearer ${access}` : undefined },
-      });
-      const data = resp2.data;
-      if (Array.isArray(data)) {
-        setPet(data[0] || null);
-      } else if (data.pet) {
-        setPet(data.pet);
-      } else if (Array.isArray(data.pets)) {
-        setPet(data.pets[0] || null);
-      } else {
+      // Fallback: tentar rota /pets (se disponível)
+      try {
+        const urlQuery = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PETS}?id=${numericId}`;
+        const resp2 = await axios.get(urlQuery, {
+          headers: { Authorization: access ? `Bearer ${access}` : undefined },
+        });
+        const data = resp2.data;
+        if (Array.isArray(data)) {
+          setPet(data[0] || null);
+        } else if (data.pet) {
+          setPet(data.pet);
+        } else if (Array.isArray(data.pets)) {
+          setPet(data.pets[0] || null);
+        } else {
+          setPet(null);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar pet (fallback):", e);
         setPet(null);
       }
     } catch (error) {
@@ -82,8 +139,75 @@ export default function PetDetailsScreen() {
     }
   };
 
+  // Extrai informações da ONG do objeto pet quando disponíveis
+  const extractOngInfoFromPet = async (petObj: any) => {
+    if (!petObj) return setOngInfo(null);
+
+    // Se já vier um objeto nested 'ong', usa ele diretamente
+    if (petObj.ong && typeof petObj.ong === "object") {
+      setOngInfo(petObj.ong);
+      return;
+    }
+
+    // Se o backend adicionou campos 'ong_nome', 'ong_telefone', 'ong_foto', usa-os
+    if (
+      petObj.ong_nome ||
+      petObj.ong_telefone ||
+      petObj.ong_foto ||
+      petObj.ong_imagem
+    ) {
+      setOngInfo({
+        nome_fantasia:
+          petObj.ong_nome_fantasia ||
+          petObj.ong_nome ||
+          petObj.ong_nome_fantasia ||
+          petObj.ong_nome,
+        telefone: petObj.ong_telefone || petObj.ong_telefone,
+        imagem: petObj.ong_foto || petObj.ong_imagem,
+        endereco: petObj.ong_endereco,
+      });
+      return;
+    }
+
+    // Se só veio ong_id (pk/obj), tenta buscar via endpoint (se existir)
+    const ongId =
+      petObj.ong_id &&
+      (typeof petObj.ong_id === "object"
+        ? petObj.ong_id.id || petObj.ong_id
+        : petObj.ong_id);
+    if (ongId) {
+      try {
+        const auth = await getAuthData();
+        const access = auth.access;
+        const url = `${API_CONFIG.BASE_URL}/get_ong_by_id`;
+        const resp = await axios.post(
+          url,
+          { ong_id: String(ongId) },
+          {
+            headers: { Authorization: access ? `Bearer ${access}` : undefined },
+          }
+        );
+        const data = resp.data;
+        const obj = data.ong || data || null;
+        if (obj) {
+          setOngInfo(obj);
+          return;
+        }
+      } catch (e) {
+        // endpoint pode não existir; ignora
+      }
+    }
+
+    setOngInfo(null);
+  };
+
   const handleAgendarVisita = () => {
     if (!pet) return;
+    const phone =
+      (ongInfo && (ongInfo.telefone || ongInfo.telefone_cadastro)) ||
+      pet?.ong_telefone ||
+      (pet as any)?.ong?.telefone ||
+      null;
 
     Alert.alert(
       "Agendar Visita",
@@ -96,16 +220,16 @@ export default function PetDetailsScreen() {
         {
           text: "Ligar para ONG",
           onPress: () => {
-            if (pet.ong_telefone) {
-              Linking.openURL(`tel:${removeFormatting(pet.ong_telefone)}`);
+            if (phone) {
+              Linking.openURL(`tel:${removeFormatting(phone)}`);
             }
           },
         },
         {
           text: "WhatsApp",
           onPress: () => {
-            if (pet.ong_telefone) {
-              const phoneNumber = removeFormatting(pet.ong_telefone);
+            if (phone) {
+              const phoneNumber = removeFormatting(phone);
               const message = `Olá! Gostaria de agendar uma visita para conhecer ${pet.nome}.`;
               Linking.openURL(
                 `whatsapp://send?phone=55${phoneNumber}&text=${encodeURIComponent(message)}`
@@ -140,6 +264,11 @@ export default function PetDetailsScreen() {
   const caracteristicas = pet
     ? getCaracteristicasTexto(pet.vetor_caracteristicas)
     : [];
+
+  // Fonte de imagem da ONG (resolve string -> {uri})
+  const ongImageSrc =
+    resolveImageSource(ongInfo) ||
+    resolveImageSource({ imagem: pet?.ong_foto || (pet as any)?.ong_imagem });
 
   return (
     <View className="flex-1 bg-amber-700">
@@ -335,23 +464,26 @@ export default function PetDetailsScreen() {
             <View className="flex-row justify-between items-start mb-4">
               <View className="flex-1 mr-4">
                 <Text className="text-lg font-bold text-gray-800 mb-1">
-                  {pet?.ong_nome || "ONG Responsável"}
+                  {ongInfo?.nome_fantasia ||
+                    pet?.ong_nome ||
+                    (pet as any)?.ong_nome_fantasia ||
+                    "ONG Responsável"}
                 </Text>
-                {pet?.ong_endereco && (
+                {(ongInfo?.endereco || pet?.ong_endereco) && (
                   <Text className="text-sm text-gray-600 mb-2 leading-5">
-                    {pet.ong_endereco}
+                    {ongInfo?.endereco || pet?.ong_endereco}
                   </Text>
                 )}
-                {pet?.ong_telefone && (
+                {(ongInfo?.telefone || pet?.ong_telefone) && (
                   <Text className="text-sm text-gray-600">
-                    📞 {pet.ong_telefone}
+                    📞 {ongInfo?.telefone || pet?.ong_telefone}
                   </Text>
                 )}
               </View>
               <View className="w-16 h-16 bg-gray-100 rounded-lg justify-center items-center overflow-hidden">
-                {pet?.ong_foto ? (
+                {ongImageSrc ? (
                   <Image
-                    source={pet.ong_foto}
+                    source={ongImageSrc}
                     className="w-full h-full"
                     resizeMode="cover"
                   />
