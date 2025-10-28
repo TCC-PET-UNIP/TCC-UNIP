@@ -38,7 +38,7 @@ export default function ManagePets() {
   const [editIdade, setEditIdade] = useState("");
   const [editRaca, setEditRaca] = useState("");
   const [editPeso, setEditPeso] = useState("");
-  const [editSexo, setEditSexo] = useState<"Macho" | "Fêmea">("Macho");
+  const [editSexo, setEditSexo] = useState<"Macho" | "Femea">("Macho");
   const [editDescricao, setEditDescricao] = useState("");
   const [editVacinado, setEditVacinado] = useState(false);
   const [editCastrado, setEditCastrado] = useState(false);
@@ -222,7 +222,7 @@ export default function ManagePets() {
       formData.append("descricao", editDescricao);
       formData.append("vacinado", editVacinado ? "true" : "false");
       formData.append("castrado", editCastrado ? "true" : "false");
-      formData.append("status", editStatus);
+      formData.append("disponivel", editStatus.toLowerCase() === "disponivel" ? "true" : "false");
 
       // If photo is a picked image object with uri, attach it
       if (editFoto && (editFoto as any).uri) {
@@ -671,14 +671,14 @@ export default function ManagePets() {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => setEditSexo("Fêmea")}
+                    onPress={() => setEditSexo("Femea")}
                     className={`flex-1 py-3 ml-2 rounded-lg ${
-                      editSexo === "Fêmea" ? "bg-[#8DC6CE]" : "bg-gray-200"
+                      editSexo === "Femea" ? "bg-[#8DC6CE]" : "bg-gray-200"
                     }`}
                   >
                     <Text
                       className={`text-center font-bold ${
-                        editSexo === "Fêmea" ? "text-white" : "text-gray-600"
+                        editSexo === "Femea" ? "text-white" : "text-gray-600"
                       }`}
                     >
                       Fêmea

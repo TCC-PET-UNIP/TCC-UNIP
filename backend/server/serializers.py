@@ -89,7 +89,7 @@ class PetUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pets
-        fields = ['id', 'nome', 'idade', 'descricao', 'disponivel', 'vetor_caracteristicas', 'imagem', 'ong_id', 'adotante_id']
+        fields = ['id', 'nome', 'idade', 'raca', 'sexo', 'descricao', 'disponivel', 'vetor_caracteristicas', 'imagem', 'ong_id', 'adotante_id']
         extra_kwargs = {
             'id': {'required': True}
         }

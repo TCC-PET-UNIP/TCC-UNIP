@@ -129,7 +129,7 @@ def seed_pets(ongs):
                 idade=data["idade"],
                 descricao=data["descricao"],
                 raca="Labrador",
-                sexo=random.choice(["Macho", "Fêmea"]),
+                sexo=random.choice(["Macho", "Femea"]),
                 disponivel=True,
                 vetor_caracteristicas=data["vetor_caracteristicas"],
                 imagem=File(img_file, name="default.jpg"),
