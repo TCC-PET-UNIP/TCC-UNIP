@@ -126,8 +126,10 @@ def register_pet(req):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def update_pet_data(req):
+    print(req.content_type, req.FILES)
     serializer = PetUpdateSerializer(data=req.data, partial=True)
     serializer.is_valid(raise_exception=True)
+
 
     pet_id = serializer.validated_data.pop('id')
 
@@ -138,6 +140,7 @@ def update_pet_data(req):
 
     # --- Atualiza os demais campos do pet ---
     for field, value in serializer.validated_data.items():
+        print(field, value)
         setattr(pet, field, value)
     pet.save()
 

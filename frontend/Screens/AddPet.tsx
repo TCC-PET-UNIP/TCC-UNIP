@@ -33,7 +33,6 @@ export default function AddPet() {
   const [peso, setPeso] = useState("");
   const [sexo, setSexo] = useState<"Macho" | "Fêmea">("Macho");
   const [descricao, setDescricao] = useState("");
-  const [vacinado, setVacinado] = useState<boolean>(false);
   const [castrado, setCastrado] = useState<boolean>(false);
   const [foto, setFoto] = useState<any>(null);
 
@@ -131,8 +130,6 @@ export default function AddPet() {
       formData.append("peso", peso);
       formData.append("sexo", sexo);
       formData.append("descricao", descricao);
-      formData.append("vacinado", vacinado ? "true" : "false");
-      formData.append("castrado", castrado ? "true" : "false");
       // seguir documentação: incluir campo disponivel
       formData.append("disponivel", "true");
 
@@ -171,8 +168,6 @@ export default function AddPet() {
             setRaca("");
             setPeso("");
             setDescricao("");
-            setVacinado(false);
-            setCastrado(false);
             setFoto(null);
             setSexo("Macho");
             // opcional: navegar para lista de pets
@@ -197,8 +192,6 @@ export default function AddPet() {
     setDescricao(
       "Rex é um cachorro muito dócil e carinhoso, adora brincar e fazer companhia. Está procurando um lar amoroso para chamar de seu."
     );
-    setVacinado(true);
-    setCastrado(true);
   };
 
   if (!userProfile) {
@@ -323,47 +316,6 @@ export default function AddPet() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
-
-          {/* Card de Características */}
-          <View className="bg-white rounded-2xl p-6 shadow-sm mb-4">
-            <Text className="text-lg font-bold text-amber-800 mb-4">
-              Características
-            </Text>
-
-            {/* Vacinado */}
-            <TouchableOpacity
-              onPress={() => setVacinado(!vacinado)}
-              className="flex-row items-center mb-4"
-            >
-              <View
-                className={`w-6 h-6 rounded border-2 mr-3 items-center justify-center ${
-                  vacinado
-                    ? "bg-[#8DC6CE] border-[#8DC6CE]"
-                    : "border-amber-400"
-                }`}
-              >
-                {vacinado && <Feather name="check" size={16} color="white" />}
-              </View>
-              <Text className="text-amber-800 font-semibold">Vacinado</Text>
-            </TouchableOpacity>
-
-            {/* Castrado */}
-            <TouchableOpacity
-              onPress={() => setCastrado(!castrado)}
-              className="flex-row items-center mb-4"
-            >
-              <View
-                className={`w-6 h-6 rounded border-2 mr-3 items-center justify-center ${
-                  castrado
-                    ? "bg-[#8DC6CE] border-[#8DC6CE]"
-                    : "border-amber-400"
-                }`}
-              >
-                {castrado && <Feather name="check" size={16} color="white" />}
-              </View>
-              <Text className="text-amber-800 font-semibold">Castrado</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Card de Descrição */}

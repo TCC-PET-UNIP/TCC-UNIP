@@ -22,9 +22,12 @@ import axios from "axios";
 import API_CONFIG, { getAuthData } from "../services/apiConfig";
 import BottomNavigation from "../components/BottomNavigation";
 import { isNotEmpty } from "../utils/validators";
+import { useIsFocused } from "@react-navigation/native";
+import { getCaracteristicasTexto } from "@/mockData/mockPets";
 
 export default function ManagePets() {
   const router = useRouter();
+  const isFocused = useIsFocused();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -39,8 +42,6 @@ export default function ManagePets() {
   const [editPeso, setEditPeso] = useState("");
   const [editSexo, setEditSexo] = useState<"Macho" | "Femea">("Macho");
   const [editDescricao, setEditDescricao] = useState("");
-  const [editVacinado, setEditVacinado] = useState(false);
-  const [editCastrado, setEditCastrado] = useState(false);
   const [editStatus, setEditStatus] = useState("Disponível");
   const [editFoto, setEditFoto] = useState<any>(null);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -63,6 +64,13 @@ export default function ManagePets() {
   useEffect(() => {
     checkUserProfile();
   }, []);
+
+  useEffect(() => {
+    if (isFocused) {
+      // loadPets já cuida de setLoading/erros internamente
+      loadPets();
+    }
+  }, [isFocused]);
 
   const checkUserProfile = async () => {
     try {
@@ -153,8 +161,6 @@ export default function ManagePets() {
     setEditPeso(pet.peso || "");
     setEditSexo(pet.sexo || "Macho");
     setEditDescricao(pet.descricao);
-    setEditVacinado(pet.vacinado || false);
-    setEditCastrado(pet.castrado || false);
     setEditStatus(pet.status || (pet.disponivel ? "Disponível" : "Adotado"));
     // inicializa editFoto com { uri } quando backend retorna string em imagem
     setEditFoto(resolveImageSource(pet) || null);
@@ -219,9 +225,10 @@ export default function ManagePets() {
       formData.append("peso", editPeso);
       formData.append("sexo", editSexo);
       formData.append("descricao", editDescricao);
-      formData.append("vacinado", editVacinado ? "true" : "false");
-      formData.append("castrado", editCastrado ? "true" : "false");
-      formData.append("disponivel", editStatus.toLowerCase() === "disponivel" ? "true" : "false");
+      formData.append(
+        "disponivel",
+        editStatus.toLowerCase() === "disponível" ? "true" : "false"
+      );
 
       // If photo is a picked image object with uri, attach it
       if (editFoto && (editFoto as any).uri) {
@@ -230,7 +237,7 @@ export default function ManagePets() {
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : `image`;
         // @ts-ignore - React Native FormData file
-        formData.append("foto", { uri: localUri, name: filename, type });
+        formData.append("imagem", { uri: localUri, name: filename, type });
       }
 
       const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPDATE_PET}`;
@@ -261,8 +268,6 @@ export default function ManagePets() {
                 peso: editPeso,
                 sexo: editSexo,
                 descricao: editDescricao,
-                vacinado: editVacinado,
-                castrado: editCastrado,
                 status: editStatus,
                 foto: editFoto,
               }
@@ -410,6 +415,19 @@ export default function ManagePets() {
                   ? pet.disponivel
                   : pet.status === "Disponível";
               const imageSource = resolveImageSource(pet);
+              const caracteristicas = pet.vetor_caracteristicas
+                ? getCaracteristicasTexto(pet.vetor_caracteristicas)
+                    .filter((c, i, arr) => arr.indexOf(c) === i)
+                    .filter((c) => {
+                      if (!c) return false;
+                      const normalized = c
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .trim()
+                        .toLowerCase();
+                      return normalized !== "caracteristica";
+                    })
+                : [];
 
               return (
                 <TouchableOpacity
@@ -488,33 +506,6 @@ export default function ManagePets() {
                           {pet.sexo || "—"}
                         </Text>
                       </View>
-
-                      <View className="flex-row items-center mt-2">
-                        {pet.vacinado && (
-                          <View className="flex-row items-center bg-green-50 px-2 py-1 rounded mr-2">
-                            <Feather
-                              name="check-circle"
-                              size={12}
-                              color="#16a34a"
-                            />
-                            <Text className="text-green-700 text-xs ml-1 font-semibold">
-                              Vacinado
-                            </Text>
-                          </View>
-                        )}
-                        {pet.castrado && (
-                          <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded">
-                            <Feather
-                              name="check-circle"
-                              size={12}
-                              color="#2563eb"
-                            />
-                            <Text className="text-blue-700 text-xs ml-1 font-semibold">
-                              Castrado
-                            </Text>
-                          </View>
-                        )}
-                      </View>
                     </View>
                   </View>
 
@@ -560,7 +551,7 @@ export default function ManagePets() {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           {/* Header do Modal */}
-          <View className="bg-[#B87B56] pt-12 pb-6 px-6 flex-row items-center">
+          <View className="bg-[#B87B56] pt-5 pb-6 px-6 flex-row items-center">
             <TouchableOpacity onPress={handleCancelEdit} className="mr-4">
               <Feather name="x" size={24} color="white" />
             </TouchableOpacity>
@@ -728,51 +719,6 @@ export default function ManagePets() {
                     </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
-
-              {/* Card de Características */}
-              <View className="bg-white rounded-2xl p-6 shadow-sm mb-4">
-                <Text className="text-lg font-bold text-amber-800 mb-4">
-                  Características
-                </Text>
-
-                {/* Vacinado */}
-                <TouchableOpacity
-                  onPress={() => setEditVacinado(!editVacinado)}
-                  className="flex-row items-center mb-4"
-                >
-                  <View
-                    className={`w-6 h-6 rounded border-2 mr-3 items-center justify-center ${
-                      editVacinado
-                        ? "bg-[#8DC6CE] border-[#8DC6CE]"
-                        : "border-amber-400"
-                    }`}
-                  >
-                    {editVacinado && (
-                      <Feather name="check" size={16} color="white" />
-                    )}
-                  </View>
-                  <Text className="text-amber-800 font-semibold">Vacinado</Text>
-                </TouchableOpacity>
-
-                {/* Castrado */}
-                <TouchableOpacity
-                  onPress={() => setEditCastrado(!editCastrado)}
-                  className="flex-row items-center mb-4"
-                >
-                  <View
-                    className={`w-6 h-6 rounded border-2 mr-3 items-center justify-center ${
-                      editCastrado
-                        ? "bg-[#8DC6CE] border-[#8DC6CE]"
-                        : "border-amber-400"
-                    }`}
-                  >
-                    {editCastrado && (
-                      <Feather name="check" size={16} color="white" />
-                    )}
-                  </View>
-                  <Text className="text-amber-800 font-semibold">Castrado</Text>
-                </TouchableOpacity>
               </View>
 
               {/* Card de Descrição */}

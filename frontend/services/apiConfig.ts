@@ -3,7 +3,7 @@ import axios, { AxiosInstance } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Defina o IP da máquina que roda o backend aqui:
-const LOCAL_IP = "192.168.15.15"; // ajuste conforme sua rede
+const LOCAL_IP = "10.23.245.70"; // ajuste conforme sua rede
 
 const computeBaseUrl = () => {
   // Web e dispositivos usam o IP fixo
@@ -15,7 +15,7 @@ const API_CONFIG = {
   ENDPOINTS: {
     REGISTER_ONG: "/register_ong",
     REGISTER_ADOPTER: "/register_adopter",
-    LOGIN: "/login",
+    LOGIN: "/login", 
     HEALTH: "/health",
     PETS: "/pets",
     REGISTER_PET: "/register_pet",

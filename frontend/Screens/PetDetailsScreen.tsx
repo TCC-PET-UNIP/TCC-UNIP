@@ -16,7 +16,7 @@ import API_CONFIG, { getAuthData } from "../services/apiConfig";
 import { Pet } from "../types/types";
 import BottomNavigation from "../components/BottomNavigation";
 import authService from "../services/authService";
-import { removeFormatting } from "../utils/formatters";
+import { removeFormatting, formatPhone } from "../utils/formatters";
 
 export default function PetDetailsScreen() {
   const router = useRouter();
@@ -265,8 +265,19 @@ export default function PetDetailsScreen() {
     );
   }
 
+  // obtém características em texto, remove duplicatas e filtra entradas inválidas
   const caracteristicas = pet
     ? getCaracteristicasTexto(pet.vetor_caracteristicas)
+        .filter((c, i, arr) => arr.indexOf(c) === i)
+        .filter((c) => {
+          if (!c) return false;
+          const normalized = c
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim()
+            .toLowerCase();
+          return normalized !== "caracteristica";
+        })
     : [];
 
   // Fonte de imagem da ONG (resolve string -> {uri})
@@ -296,13 +307,13 @@ export default function PetDetailsScreen() {
   })();
 
   return (
-    <View className="flex-1 bg-amber-700">
+    <View className="flex-1 bg-amber-600">
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        <View className="flex-row items-center justify-between pt-16 pb-5 px-5">
+        <View className="flex-row items-center justify-between pt-5 pb-5 px-5">
           <TouchableOpacity
             onPress={handleVoltar}
             className="p-2 rounded-xl bg-white/20"
@@ -323,28 +334,6 @@ export default function PetDetailsScreen() {
               resizeMode="cover"
             />
           </View>
-        </View>
-
-        {/* Miniaturas das imagens */}
-        <View className="flex-row justify-center px-5 mb-8 space-x-3">
-          {petImages.map((image, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => setSelectedImageIndex(index)}
-              className="p-1 w-20 h-20 rounded-lg overflow-hidden"
-              style={{
-                borderWidth: selectedImageIndex === index ? 2 : 0,
-                borderColor:
-                  selectedImageIndex === index ? "#FFFFFF" : "transparent",
-              }}
-            >
-              <Image
-                source={image}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          ))}
         </View>
 
         {/* Card de informações do pet */}
@@ -420,18 +409,6 @@ export default function PetDetailsScreen() {
               </View>
             )}
 
-            {/* Saúde */}
-            <View className="mb-3">
-              <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
-                <Text className="text-base text-gray-600 font-medium">
-                  Vacinado:
-                </Text>
-                <Text className="text-base text-gray-800 font-semibold">
-                  {pet?.vacinado ? "Sim" : "Não"}
-                </Text>
-              </View>
-            </View>
-
             {/* Castrado */}
             <View className="mb-3">
               <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
@@ -501,7 +478,10 @@ export default function PetDetailsScreen() {
                 )}
                 {(ongInfo?.telefone || pet?.ong_telefone) && (
                   <Text className="text-sm text-gray-600">
-                    📞 {ongInfo?.telefone || pet?.ong_telefone}
+                    📞{" "}
+                    {formatPhone(
+                      String(ongInfo?.telefone || pet?.ong_telefone)
+                    )}
                   </Text>
                 )}
               </View>

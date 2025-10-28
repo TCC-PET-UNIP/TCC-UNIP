@@ -20,7 +20,7 @@ export default function AboutApp() {
     { name: "Beatriz Viana lopes" },
     { name: "Victor Aires Ramalho" },
     { name: "Davi de Paula Silva" },
-    { name: "Thiago Ramed" },
+    { name: "Thiago Mamede" },
   ];
 
   const handleOpenGithub = async () => {

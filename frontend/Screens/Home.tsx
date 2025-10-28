@@ -22,6 +22,21 @@ export default function Home() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const router = useRouter();
 
+  // helper para resolver pet.imagem (string relativa) para { uri }
+  const resolveImageSource = (petLike: any) => {
+    const img = petLike?.imagem || petLike?.foto || null;
+    if (!img) return null;
+    if (typeof img === "string") {
+      const root = API_CONFIG.BASE_URL.replace(/\/server\/?$/, "");
+      const uri =
+        img.startsWith("http") || img.startsWith("https")
+          ? img
+          : `${root}${img.startsWith("/") ? "" : "/"}${img}`;
+      return { uri };
+    }
+    return img;
+  };
+
   useEffect(() => {
     checkAuthAndLoadProfile();
   }, []);
@@ -130,9 +145,15 @@ export default function Home() {
           zIndex: 1000,
         }}
       >
-        <Text className="text-xl font-bold text-pethelper-dark">
-          Pets pra você
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text className="text-xl font-bold text-pethelper-dark">
+            Pets pra você
+          </Text>
+          <Text className="text-sm text-gray-600 mt-1">
+            Encontramos {pets.length} {pets.length === 1 ? "pet" : "pets"} pra
+            você!
+          </Text>
+        </View>
         <TouchableOpacity className="btn-pethelper-logout" onPress={goToLogin}>
           <Feather name="log-out" size={20} color="#ad3434" />
         </TouchableOpacity>
@@ -178,18 +199,35 @@ export default function Home() {
           </View>
         ) : (
           pets.map((pet) => {
-            const caracteristicas = getCaracteristicasTexto(
+            // obtém texto das características, remove duplicatas e filtra entradas inválidas
+            const rawCaracteristicas = getCaracteristicasTexto(
               pet.vetor_caracteristicas
             );
+            const caracteristicas = rawCaracteristicas
+              .filter((c, i, arr) => arr.indexOf(c) === i)
+              .filter((c) => {
+                if (!c) return false;
+                // normaliza e remove acentos para comparar
+                const normalized = c
+                  .normalize("NFD")
+                  .replace(/[\u0300-\u036f]/g, "")
+                  .trim()
+                  .toLowerCase();
+                return normalized !== "caracteristica";
+              });
 
             return (
               <View key={pet.id} className="pet-card">
                 <View className="pet-image-container">
-                  <Image
-                    source={pet.imagem}
-                    className="pet-image"
-                    resizeMode="cover"
-                  />
+                  {resolveImageSource(pet) ? (
+                    <Image
+                      source={resolveImageSource(pet)}
+                      className="pet-image"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View className="pet-image bg-gray-100" />
+                  )}
                 </View>
 
                 <View className="flex-1">
