@@ -158,6 +158,21 @@ def get_pets(req):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_pet_by_id(req):
+    pet_id = req.data.get('pet_id')
+    if not pet_id:
+        return Response({'error': 'Campo "pet_id" é obrigatório.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        pet = Pets.objects.get(id=pet_id)
+        serialized = PetSerializer(pet, context={'request': req})
+        return Response({'pet_id': pet_id, 'pet': serialized.data}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
