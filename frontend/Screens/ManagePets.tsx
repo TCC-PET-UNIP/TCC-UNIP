@@ -22,7 +22,6 @@ import axios from "axios";
 import API_CONFIG, { getAuthData } from "../services/apiConfig";
 import BottomNavigation from "../components/BottomNavigation";
 import { isNotEmpty } from "../utils/validators";
-import { getCaracteristicasTexto } from "@/utils/formatters";
 
 export default function ManagePets() {
   const router = useRouter();

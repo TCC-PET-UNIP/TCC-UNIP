@@ -26,7 +26,7 @@ export default function PetDetailsScreen() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Mock de múltiplas imagens para o pet (usando a mesma imagem)
-  const petImages = pet ? [pet.foto, pet.foto, pet.foto] : [];
+  const petImages = pet ? [pet.imagem, pet.imagem, pet.imagem] : [];
 
   useEffect(() => {
     if (id) {
