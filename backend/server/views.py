@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework import status
-from .serializers import OngSerializer, AdotanteSerializer, LoginSerializer, AccountOutputSerializer, OngUpdateSerializer, AdopterUpdateSerializer, PetUpdateSerializer, PetSerializer
+from .serializers import OngSerializer, AdotanteSerializer, LoginSerializer, AccountOutputSerializer, OngUpdateSerializer, AdopterUpdateSerializer, PetUpdateSerializer, PetSerializer, PetOutputSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -168,7 +168,7 @@ def get_pet_by_id(req):
 
     try:
         pet = Pets.objects.get(id=pet_id)
-        serialized = PetSerializer(pet, context={'request': req})
+        serialized = PetOutputSerializer(pet, context={'request': req})
         return Response({'pet_id': pet_id, 'pet': serialized.data}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

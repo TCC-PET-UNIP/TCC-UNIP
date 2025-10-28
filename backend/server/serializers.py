@@ -76,6 +76,19 @@ class PetSerializer(serializers.ModelSerializer):
             'adotante_id': {'required': False, 'allow_null': True}
         }
 
+class PetOutputSerializer(serializers.ModelSerializer):
+    ong = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Pets
+        fields = ['id', 'ong_id', 'adotante_id', 'nome', 'idade', 'descricao', 'disponivel', 'vetor_caracteristicas', 'sexo', 'raca', 'imagem', 'ong']
+
+    def get_ong(self, obj):
+        from .serializers import OngSerializer  
+        if hasattr(obj, 'ong_id') and obj.ong_id:
+            return OngSerializer(obj.ong_id, context=self.context).data
+        return None
+
 class OngUpdateSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(write_only=True)
     endereco = AddressSerializer(source='endereco_id', required=False)
