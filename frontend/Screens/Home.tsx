@@ -137,7 +137,7 @@ export default function Home() {
         className="absolute left-0 right-0 px-4 flex-row items-center justify-between z-10"
         style={{
           // use the same background color as the main screen so the header blends in
-          backgroundColor: "#F8F3EC",
+          backgroundColor: "#B87B56",
           paddingVertical: 8,
           paddingHorizontal: 16,
           alignItems: "center",
@@ -146,10 +146,10 @@ export default function Home() {
         }}
       >
         <View style={{ flex: 1 }}>
-          <Text className="text-xl font-bold text-pethelper-dark">
+          <Text className="text-xl text-white font-bold text-pethelper-dark">
             Pets pra você
           </Text>
-          <Text className="text-sm text-gray-600 mt-1">
+          <Text className="text-sm text-white mt-1">
             Encontramos {pets.length} {pets.length === 1 ? "pet" : "pets"} pra
             você!
           </Text>
