@@ -16,6 +16,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  ImageSourcePropType,
 } from "react-native";
 import { useRouter } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
@@ -44,10 +45,10 @@ export default function Profile() {
   const INPUT_BASE = "border-2 rounded-xl px-4 py-3 text-amber-700";
   const INPUT_EDIT = "border-amber-300 bg-white";
   const INPUT_READONLY = "border-gray-200 bg-gray-50";
-
   // Estados para os campos editáveis
   const [nome, setNome] = useState("");
   const [nomeFantasia, setNomeFantasia] = useState("");
+  const [imagemOng, setImagemOng] = useState<ImageSourcePropType | null>(null);
   const [cnpj, setCnpj] = useState("");
   const [idade, setIdade] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -109,19 +110,19 @@ export default function Profile() {
   const handleImagePicker = useCallback(() => {
     ImagePickerHelper.showImagePickerOptions(pickFromCamera, pickFromGallery);
   }, [pickFromCamera, pickFromGallery]);
-
   const populateFields = (profile: UserProfile) => {
     setNome(profile.nome || "");
     setNomeFantasia(profile.nome_fantasia || "");
     setCnpj(profile.cnpj || "");
     setIdade(profile.idade?.toString() || "");
     setTelefone(profile.telefone);
-
+    setImagemOng(profile.imagem ? { uri: profile.imagem } : null);
     setLogradouro(profile.endereco.logradouro);
     setNumero(profile.endereco.numero);
     setBairro(profile.endereco.bairro);
     setCidade(profile.endereco.cidade);
     setUf(profile.endereco.uf);
+    setCep(profile.endereco.cep);
     setCep(profile.endereco.cep);
 
     // If the profile includes an image (common keys used across the app), use it
@@ -131,7 +132,7 @@ export default function Profile() {
       (profile as any).logo ||
       (profile as any).imagem ||
       (profile as any).foto_url ||
-      (profile as any).image;
+      (profile as any).imagem;
     if (maybeImage) {
       // normalize string -> { uri }
       const normalized =
@@ -482,9 +483,9 @@ export default function Profile() {
               <View className="items-center">
                 <View className="relative">
                   <View className="w-32 h-32 rounded-full bg-amber-100 items-center justify-center overflow-hidden border-2 border-amber-200">
-                    {profileImage ? (
+                    {imagemOng ? (
                       <Image
-                        source={profileImage}
+                        source={imagemOng}
                         style={{ width: 128, height: 128 }}
                         resizeMode="cover"
                       />

@@ -81,7 +81,7 @@ export interface UserProfile {
   telefone: string;
   endereco: Endereco;
   vetor_caracteristicas?: number[]; // Adotante
-  // imagem?: any; // ONG (enviado via multipart)
+  imagem?: any; // ONG (enviado via multipart)
 }
 
 export interface Adotante {

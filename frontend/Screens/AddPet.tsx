@@ -31,10 +31,43 @@ export default function AddPet() {
   const [idade, setIdade] = useState("");
   const [raca, setRaca] = useState("");
   const [peso, setPeso] = useState("");
-  const [sexo, setSexo] = useState<"Macho" | "Fêmea">("Macho");
+  const [sexo, setSexo] = useState<"Macho" | "Femea">("Macho");
   const [descricao, setDescricao] = useState("");
   const [castrado, setCastrado] = useState<boolean>(false);
   const [foto, setFoto] = useState<any>(null);
+  // --- Novas perguntas para o vetor do pet (IA) ---
+  const [especie, setEspecie] = useState<"1" | "0">("1"); // 1=Cão, 0=Gato
+  const [porte, setPorte] = useState<"1" | "2" | "3" | "4" | "5">("3"); // 1..5
+  const [cuidados, setCuidados] = useState<"1" | "0">("0"); // 1=Sim,0=Não
+  const [trauma, setTrauma] = useState<"1" | "0">("0"); // 1=Sim,0=Não
+  const [sociavelCriancas, setSociavelCriancas] = useState<"1" | "0">("1");
+  const [sociavelAnimais, setSociavelAnimais] = useState<"1" | "0">("1");
+  const [tutorExperiente, setTutorExperiente] = useState<"1" | "0">("0");
+  // helper para renderizar botões de opção (pequeno utilitário local)
+  const OptionRow = ({ label, options, value, onChange }: any) => (
+    <View className="mb-3">
+      <Text className="text-amber-700 font-semibold mb-2">{label}</Text>
+      <View className="flex-row flex-wrap">
+        {options.map((opt: any) => (
+          <TouchableOpacity
+            key={opt.value}
+            onPress={() => onChange(opt.value)}
+            className={`px-3 py-2 mr-2 mb-2 rounded-lg ${
+              value === opt.value ? "bg-[#8DC6CE]" : "bg-[#F1F1F1]"
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                value === opt.value ? "text-white" : "text-amber-800"
+              }`}
+            >
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
 
   useEffect(() => {
     checkUserProfile();
@@ -123,6 +156,18 @@ export default function AddPet() {
       const access = auth.access;
       const profile = auth.userProfile || userProfile;
 
+      // monta o vetor conforme especificação e loga
+      const vetor_caracteristicas = [
+        Number(especie), // Espécie
+        Number(porte), // Porte
+        Number(cuidados), // Cuidados especiais
+        Number(trauma), // Trauma
+        Number(sociavelCriancas), // Sociável com crianças
+        Number(sociavelAnimais), // Sociável com animais
+        Number(tutorExperiente), // Requer tutor experiente
+      ];
+      console.log("[AddPet] vetor_caracteristicas:", vetor_caracteristicas);
+
       const formData = new FormData();
       formData.append("nome", nome);
       formData.append("idade", String(idadeNum));
@@ -132,6 +177,11 @@ export default function AddPet() {
       formData.append("descricao", descricao);
       // seguir documentação: incluir campo disponivel
       formData.append("disponivel", "true");
+      // anexar vetor de características como múltiplos campos (multipart) para ser recebido como lista pelo backend
+      // ex.: vetor_caracteristicas=1&vetor_caracteristicas=3&...
+      vetor_caracteristicas.forEach((v) =>
+        formData.append("vetor_caracteristicas", String(v))
+      );
 
       // include ong id if backend expects it
       if (profile && profile.id) {
@@ -197,7 +247,7 @@ export default function AddPet() {
   if (!userProfile) {
     return (
       <View className="flex-1 items-center justify-center bg-orange-50">
-        <ActivityIndicator size="large" color="#B87B56" />
+        <ActivityIndicator size="large" color="#B87S56" />
         <Text className="text-amber-700 mt-4">Carregando...</Text>
       </View>
     );
@@ -302,20 +352,100 @@ export default function AddPet() {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setSexo("Fêmea")}
+                onPress={() => setSexo("Femea")}
                 className={`flex-1 py-3 ml-2 rounded-lg ${
-                  sexo === "Fêmea" ? "bg-[#8DC6CE]" : "bg-gray-200"
+                  sexo === "Femea" ? "bg-[#8DC6CE]" : "bg-gray-200"
                 }`}
               >
                 <Text
                   className={`text-center font-bold ${
-                    sexo === "Fêmea" ? "text-white" : "text-gray-600"
+                    sexo === "Femea" ? "text-white" : "text-gray-600"
                   }`}
                 >
                   Fêmea
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+
+          {/* Card de Características (Questionário do Pet para IA) */}
+          <View className="bg-white rounded-2xl p-6 shadow-sm mb-4">
+            <Text className="text-lg font-bold text-amber-800 mb-4">
+              Características do Pet (para IA)
+            </Text>
+            {/* Espécie */}
+            <OptionRow
+              label="Espécie"
+              options={[
+                { label: "Cão", value: "1" },
+                { label: "Gato", value: "0" },
+              ]}
+              value={especie}
+              onChange={setEspecie}
+            />
+            {/* Porte */}
+            <OptionRow
+              label="Porte"
+              options={[
+                { label: "Mini", value: "1" },
+                { label: "Pequeno", value: "2" },
+                { label: "Médio", value: "3" },
+                { label: "Grande", value: "4" },
+                { label: "Gigante", value: "5" },
+              ]}
+              value={porte}
+              onChange={setPorte}
+            />
+            {/* Cuidados especiais */}
+            <OptionRow
+              label="Cuidados Especiais"
+              options={[
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
+              ]}
+              value={cuidados}
+              onChange={setCuidados}
+            />
+            {/* Trauma / Comportamental */}
+            <OptionRow
+              label="Trauma / Comportamento"
+              options={[
+                { label: "Possui", value: "1" },
+                { label: "Não possui", value: "0" },
+              ]}
+              value={trauma}
+              onChange={setTrauma}
+            />
+            {/* Sociável com crianças */}
+            <OptionRow
+              label="Sociável com Crianças"
+              options={[
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
+              ]}
+              value={sociavelCriancas}
+              onChange={setSociavelCriancas}
+            />
+            {/* Sociável com outros animais */}
+            <OptionRow
+              label="Sociável com Outros Animais"
+              options={[
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
+              ]}
+              value={sociavelAnimais}
+              onChange={setSociavelAnimais}
+            />
+            {/* Requer tutor experiente */}
+            <OptionRow
+              label="Requer Tutor Experiente"
+              options={[
+                { label: "Sim", value: "1" },
+                { label: "Não", value: "0" },
+              ]}
+              value={tutorExperiente}
+              onChange={setTutorExperiente}
+            />
           </View>
 
           {/* Card de Descrição */}
