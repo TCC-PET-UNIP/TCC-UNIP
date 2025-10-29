@@ -134,7 +134,7 @@ export default function Home() {
     <View className="container-pethelper">
       {/* Header - posicionado mais para cima */}
       <View
-        className="absolute top-4 left-0 right-0 px-4 flex-row items-center justify-between z-10"
+        className="absolute left-0 right-0 px-4 flex-row items-center justify-between z-10"
         style={{
           // use the same background color as the main screen so the header blends in
           backgroundColor: "#F8F3EC",
